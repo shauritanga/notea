@@ -14,7 +14,7 @@ export default async function CampaignsPage({ searchParams }: PageProps<"/">) {
   const ads = await db.select().from(campaigns);
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Advertising</Title>
       <Quiet>A business campaign stays out of the feed until it is paid and approved.</Quiet>
       <Note>{error}</Note>

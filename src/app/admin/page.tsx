@@ -44,11 +44,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/">) {
     : [];
   const sections = ["overview", "users", "verification", "moderation", "sponsors", "ads", "youtube", "roles", "audit"];
   return (
-    <Shell lang={lang} wide>
+    <Shell lang={lang} name={user.name} wide>
       <Title>Usimamizi</Title>
       <div className="flex gap-2 overflow-x-auto">
         {sections.map((item) => (
-          <Link key={item} className={`rounded-full px-3 py-2 text-sm ${item === section ? "bg-pitch text-white" : "border border-line"}`} href={`/admin?section=${item}`}>
+          <Link key={item} className={`rounded-full px-3 py-2 text-sm ${item === section ? "bg-pitch text-[#111]" : "border border-line"}`} href={`/admin?section=${item}`}>
             {item}
           </Link>
         ))}

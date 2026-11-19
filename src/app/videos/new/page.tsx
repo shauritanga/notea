@@ -10,7 +10,7 @@ export default async function NewVideoPage({ searchParams }: PageProps<"/">) {
   const profiles = await listMyProfiles(db, user.id);
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Video</Title>
       <Note>{error}</Note>
       <form className="grid gap-4" action={videoAction}>

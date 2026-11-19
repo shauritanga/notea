@@ -18,7 +18,7 @@ export default async function SponsorPage({ searchParams }: PageProps<"/">) {
   }
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Kairuki Hospital</Title>
       <Quiet>Educational notes for the football community. Founding sponsor.</Quiet>
       <Note>{error}</Note>

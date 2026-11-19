@@ -89,7 +89,7 @@ export function CommentBox({ lang, postId }: { lang: Lang; postId: string }) {
       <form className="grid gap-3" action={commentAction}>
         <input type="hidden" name="postId" value={postId} />
         <input type="hidden" name="back" value={back} />
-        <textarea className="min-h-24 rounded-2xl border border-line bg-white px-4 py-3" name="body" placeholder={t(lang, "comment")} />
+        <textarea className="min-h-24 rounded-2xl border border-line bg-[#171c18] px-4 py-3 text-white" name="body" placeholder={t(lang, "comment")} />
         <Submit>{t(lang, "comment")}</Submit>
       </form>
       <form action={reportAction}>

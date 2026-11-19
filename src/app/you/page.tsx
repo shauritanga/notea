@@ -19,7 +19,7 @@ export default async function YouPage({ searchParams }: PageProps<"/">) {
   const error = await readError(searchParams);
   const missing = (["fan", "player", "coach", "scout"] as const).filter((type) => !mine.some((profile) => profile.type === type));
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>{user.name}</Title>
       <Quiet>{active ? `Posting as ${active.kind}` : "Choose who you are posting as."}</Quiet>
       <Note>{error}</Note>
@@ -29,7 +29,7 @@ export default async function YouPage({ searchParams }: PageProps<"/">) {
             <form className="grid gap-3" action={addProfileAction}>
               <label className="grid gap-2 text-sm font-medium">
                 {t(lang, "addProfile")}
-                <select className="h-12 rounded-2xl border border-line bg-white px-4 text-base font-normal" name="type" defaultValue={missing[0]}>
+                <select className="h-12 rounded-2xl border border-line bg-[#171c18] px-4 text-base font-normal text-white" name="type" defaultValue={missing[0]}>
                   {missing.map((type) => (
                     <option key={type} value={type}>
                       {t(lang, type === "fan" ? "roleFan" : type === "player" ? "rolePlayer" : type === "coach" ? "roleCoach" : "roleScout")}

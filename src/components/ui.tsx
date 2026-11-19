@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { setLanguageAction } from "@/app/actions";
 import { TabBar } from "@/components/tab-bar";
 import { t, type Lang } from "@/i18n/messages";
 
@@ -9,15 +8,15 @@ export function Quiet({ children }: { children: React.ReactNode }) {
 
 export function Note({ children }: { children?: string }) {
   if (!children) return null;
-  return <p className="rounded-2xl bg-[#f3e1d6] px-4 py-3 text-sm leading-6 text-pitch">{children}</p>;
+  return <p className="rounded-2xl bg-[#2a2218] px-4 py-3 text-sm leading-6 text-[#f3d7a1]">{children}</p>;
 }
 
 export function Title({ children }: { children: React.ReactNode }) {
-  return <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-pitch">{children}</h1>;
+  return <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-white">{children}</h1>;
 }
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-lg font-semibold text-pitch">{children}</h2>;
+  return <h2 className="text-lg font-semibold text-white">{children}</h2>;
 }
 
 export function Stack({ children }: { children: React.ReactNode }) {
@@ -47,7 +46,7 @@ export function Field({
     <label className="grid gap-2 text-sm font-medium">
       {label}
       <input
-        className="h-12 rounded-2xl border border-line bg-white px-4 text-base font-normal outline-none focus:border-pitch"
+        className="h-12 rounded-2xl border border-line bg-[#171c18] px-4 text-base font-normal text-white outline-none focus:border-[var(--lime)]"
         name={name}
         type={type}
         required={required}
@@ -63,7 +62,7 @@ export function Area({ label, name, required = false, defaultValue = "" }: { lab
     <label className="grid gap-2 text-sm font-medium">
       {label}
       <textarea
-        className="min-h-28 rounded-2xl border border-line bg-white px-4 py-3 text-base font-normal outline-none focus:border-pitch"
+        className="min-h-28 rounded-2xl border border-line bg-[#171c18] px-4 py-3 text-base font-normal text-white outline-none focus:border-[var(--lime)]"
         name={name}
         required={required}
         defaultValue={defaultValue}
@@ -76,7 +75,7 @@ export function Choice({ label, name, options, defaultValue }: { label: string; 
   return (
     <label className="grid gap-2 text-sm font-medium">
       {label}
-      <select className="h-12 rounded-2xl border border-line bg-white px-4 text-base font-normal" name={name} defaultValue={defaultValue ?? options[0]}>
+      <select className="h-12 rounded-2xl border border-line bg-[#171c18] px-4 text-base font-normal text-white" name={name} defaultValue={defaultValue ?? options[0]}>
         {options.map((option) => (
           <option key={option} value={option}>
             {option.replaceAll("_", " ")}
@@ -89,7 +88,7 @@ export function Choice({ label, name, options, defaultValue }: { label: string; 
 
 export function Submit({ children }: { children: React.ReactNode }) {
   return (
-    <button className="h-12 rounded-full bg-clay px-5 text-base font-semibold text-white" type="submit">
+    <button className="h-12 rounded-full bg-[var(--lime)] px-5 text-base font-semibold text-[#111]" type="submit">
       {children}
     </button>
   );
@@ -109,32 +108,70 @@ export function Trust({ verified, lang }: { verified: boolean; lang: Lang }) {
 
 export function Shell({
   lang,
+  name,
   children,
 }: {
   lang: Lang;
+  name?: string;
   wide?: boolean;
   children: React.ReactNode;
 }) {
+  const initials = (name || "N")
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0] || "")
+    .join("")
+    .toUpperCase();
   return (
     <div className="app-stage">
       <div className="app-screen">
         <header className="app-header">
-          <Link className="app-mark" href="/">
-            Notea
-          </Link>
-          <form action={setLanguageAction} className="app-lang">
-            <button className={lang === "sw" ? "is-on" : ""} name="lang" value="sw" type="submit">
-              SW
-            </button>
-            <button className={lang === "en" ? "is-on" : ""} name="lang" value="en" type="submit">
-              EN
-            </button>
-          </form>
+          {name ? (
+            <Link className="app-hello" href="/you">
+              <span className="app-avatar" aria-hidden>
+                {initials}
+              </span>
+              <span>
+                <small>{t(lang, "hi")}</small>
+                <strong>{name}</strong>
+              </span>
+            </Link>
+          ) : (
+            <Link className="app-mark" href="/">
+              Notea
+            </Link>
+          )}
+          <div className="app-tools">
+            <Link href="/discover" aria-label={t(lang, "search")}>
+              <SearchIcon />
+            </Link>
+            <Link href="/notifications" aria-label={t(lang, "alerts")}>
+              <BellIcon />
+            </Link>
+          </div>
         </header>
         <main className="app-main">{children}</main>
         <TabBar lang={lang} />
       </div>
     </div>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2H4.5z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </svg>
   );
 }
 

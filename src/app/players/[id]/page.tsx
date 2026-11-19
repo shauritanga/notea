@@ -21,7 +21,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   const lists = mine.filter((list) => scout.some((item) => item.id === list.scoutProfileId));
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>{profile.displayName}</Title>
       <Trust verified={profile.verified} lang={lang} />
       <Quiet>{profile.selfReported ? "Self-reported information" : "Verified information"}</Quiet>

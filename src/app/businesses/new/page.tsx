@@ -6,10 +6,10 @@ import { regions } from "@/lib/options";
 import { readError, requireViewer } from "@/lib/viewer";
 
 export default async function NewBusinessPage({ searchParams }: PageProps<"/">) {
-  const { lang } = await requireViewer();
+  const { user, lang } = await requireViewer();
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Sajili biashara</Title>
       <Note>{error}</Note>
       <form className="grid gap-4" action={businessAction}>

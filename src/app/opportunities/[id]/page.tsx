@@ -24,7 +24,7 @@ export default async function OpportunityPage({ params, searchParams }: { params
   const rows = canManage ? await db.select().from(applications).where(eq(applications.opportunityId, id)) : [];
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>{opportunity.title}</Title>
       <Quiet>{opportunity.kind} · {opportunity.status} · {opportunity.region}</Quiet>
       <p className="leading-7">{opportunity.description}</p>

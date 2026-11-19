@@ -18,7 +18,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
   const mode = tabs.includes(requested as FeedMode) ? (requested as FeedMode) : "personalized";
   const items = await getFeed(db, user.id, mode);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <div className="app-segments">
         {tabs.map((tab) => (
           <Link key={tab} className={tab === mode ? "is-on" : ""} href={`/?tab=${tab}`}>

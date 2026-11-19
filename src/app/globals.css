@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f4f1ea;
-  --ink: #17211c;
-  --muted: #5e6b64;
-  --line: #e3dcd0;
-  --pitch: #0f3d2e;
-  --grass: #1f7a4d;
-  --clay: #c4552a;
-  --card: #fffcf8;
+  --paper: #101410;
+  --ink: #f4f6f1;
+  --muted: #9aa396;
+  --line: #2a312b;
+  --pitch: #d6ff4a;
+  --grass: #d6ff4a;
+  --clay: #d6ff4a;
+  --lime: #d6ff4a;
+  --card: #1b211c;
   --background: var(--paper);
   --foreground: var(--ink);
 }
@@ -52,9 +53,9 @@ body {
   display: flex;
   height: calc(3.25rem + env(safe-area-inset-top));
   flex: none;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  padding: env(safe-area-inset-top) 1rem 0.7rem;
+  padding: calc(0.35rem + env(safe-area-inset-top)) 1rem 0.35rem;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--paper) 92%, white);
 }
@@ -63,7 +64,7 @@ body {
   font-family: var(--font-fraunces), serif;
   font-size: 1.45rem;
   line-height: 1;
-  color: var(--pitch);
+  color: white;
 }
 
 .app-lang {
@@ -83,8 +84,8 @@ body {
 }
 
 .app-lang button.is-on {
-  background: var(--pitch);
-  color: white;
+  background: var(--lime);
+  color: #111;
 }
 
 .app-main {
@@ -128,8 +129,8 @@ body {
 }
 
 .app-segments a.is-on {
-  background: var(--pitch);
-  color: white;
+  background: var(--lime);
+  color: #111;
 }
 
 .app-feed {
@@ -171,8 +172,8 @@ body {
   flex: none;
   place-items: center;
   border-radius: 999px;
-  background: var(--pitch);
-  color: white;
+  background: var(--lime);
+  color: #111;
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -200,14 +201,25 @@ body {
 }
 
 .app-sponsor {
-  margin: 0.35rem 1rem 0.2rem;
-  border: 1px solid #d7e7df;
+  margin: 0.7rem 1rem;
+  border: 0;
   border-radius: 1.2rem;
-  background: #f3f8f4;
+  background: var(--lime);
+  color: #111;
+}
+
+.app-sponsor p,
+.app-sponsor strong {
+  color: #111;
+}
+
+.app-sponsor button {
+  background: #111;
+  color: var(--lime);
 }
 
 .app-sponsor > p:first-child {
-  color: var(--grass);
+  color: #24300a;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -227,13 +239,13 @@ body {
 
 .app-ghost {
   border: 1px solid var(--line);
-  background: white;
-  color: var(--pitch);
+  background: #171c18;
+  color: white;
 }
 
 .app-solid {
-  background: var(--clay);
-  color: white;
+  background: var(--lime);
+  color: #111;
 }
 
 .app-auth-intro {
@@ -246,7 +258,7 @@ body {
   font-family: var(--font-fraunces), serif;
   font-size: 2.4rem;
   line-height: 1.05;
-  color: var(--pitch);
+  color: white;
 }
 
 .app-auth-intro p {
@@ -267,7 +279,7 @@ body {
   gap: 0.8rem;
   border: 1px solid var(--line);
   border-radius: 1rem;
-  background: white;
+  background: var(--card);
   padding: 0 1rem;
   font-size: 1rem;
   font-weight: 650;
@@ -276,8 +288,42 @@ body {
 .app-choice input {
   width: 1.15rem;
   height: 1.15rem;
-  accent-color: var(--pitch);
+  accent-color: var(--lime);
 }
+
+.app-hello {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.app-hello small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.app-hello strong {
+  display: block;
+  font-size: 0.98rem;
+}
+
+.app-tools {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.app-tools a {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #1c221d;
+  color: white;
+}
+
 
 .app-tabbar {
   display: grid;
@@ -309,16 +355,18 @@ body {
 }
 
 .app-tab.is-active {
-  color: var(--pitch);
+  color: var(--lime);
 }
 
 .app-tab-center {
-  width: 2.8rem;
-  height: 2.8rem;
+  width: 3.35rem;
+  height: 3.35rem;
   justify-self: center;
+  margin-top: -1.15rem;
   border-radius: 999px;
-  background: var(--clay);
-  color: white;
+  background: var(--lime);
+  color: #111;
+  box-shadow: 0 8px 18px rgba(214, 255, 74, 0.28);
 }
 
 .app-auth {
@@ -394,6 +442,18 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea {
+  background: #171c18;
+  color: white;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
 }
 
 ::selection {

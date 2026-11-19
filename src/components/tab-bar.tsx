@@ -6,9 +6,9 @@ import { t, type CopyKey, type Lang } from "@/i18n/messages";
 
 const items: Array<{ key: CopyKey; href: string; icon: IconName; center?: boolean }> = [
   { key: "home", href: "/", icon: "home" },
-  { key: "find", href: "/discover", icon: "search" },
-  { key: "post", href: "/compose", icon: "plus", center: true },
-  { key: "alerts", href: "/notifications", icon: "bell" },
+  { key: "find", href: "/discover", icon: "calendar" },
+  { key: "post", href: "/compose", icon: "video", center: true },
+  { key: "alerts", href: "/notifications", icon: "grid" },
   { key: "you", href: "/you", icon: "person" },
 ];
 
@@ -26,9 +26,8 @@ export function TabBar({ lang }: { lang: Lang }) {
           );
         }
         return (
-          <Link key={item.key} href={item.href} className={active ? "app-tab is-active" : "app-tab"} aria-current={active ? "page" : undefined}>
+          <Link key={item.key} href={item.href} className={active ? "app-tab is-active" : "app-tab"} aria-label={t(lang, item.key)} aria-current={active ? "page" : undefined}>
             <Icon name={item.icon} />
-            <span>{t(lang, item.key)}</span>
           </Link>
         );
       })}
@@ -36,7 +35,7 @@ export function TabBar({ lang }: { lang: Lang }) {
   );
 }
 
-type IconName = "home" | "search" | "plus" | "bell" | "person";
+type IconName = "home" | "calendar" | "video" | "grid" | "person";
 
 function Icon({ name }: { name: IconName }) {
   const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
@@ -47,26 +46,29 @@ function Icon({ name }: { name: IconName }) {
       </svg>
     );
   }
-  if (name === "search") {
+  if (name === "calendar") {
     return (
       <svg {...common}>
-        <circle cx="11" cy="11" r="6.5" />
-        <path d="m16 16 4 4" />
+        <rect x="4" y="5" width="16" height="15" rx="2" />
+        <path d="M8 3.5v3M16 3.5v3M4 10h16" />
       </svg>
     );
   }
-  if (name === "plus") {
+  if (name === "video") {
     return (
-      <svg {...common} strokeWidth={2.2}>
-        <path d="M12 5v14M5 12h14" />
+      <svg {...common} fill="currentColor" stroke="none">
+        <path d="M8 7.5h6.2a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 15V9A1.5 1.5 0 0 1 8 7.5z" />
+        <path d="m16 10.2 3.2-1.8v7.2L16 13.8z" />
       </svg>
     );
   }
-  if (name === "bell") {
+  if (name === "grid") {
     return (
       <svg {...common}>
-        <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2H4.5z" />
-        <path d="M10 19a2 2 0 0 0 4 0" />
+        <rect x="4" y="4" width="6.5" height="6.5" rx="1.2" />
+        <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2" />
+        <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2" />
+        <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2" />
       </svg>
     );
   }

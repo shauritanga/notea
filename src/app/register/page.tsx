@@ -16,7 +16,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/">) {
       <form className="grid gap-4" action={registerAction}>
         <Field label={t(lang, "name")} name="name" required />
         <Field label={t(lang, "identifier")} name="identifier" required placeholder={lang === "en" ? "name@email.com or 07…" : "jina@barua.com au 07…"} />
-        <Field label={t(lang, "password")} name="password" type="password" required />
+        <Field label={t(lang, "password")} name="password" type="password" required placeholder={lang === "en" ? "At least 8 characters" : "Angalau herufi 8"} />
         <label className="flex items-center gap-3 text-sm">
           <input name="terms" type="checkbox" required />
           {t(lang, "terms")}

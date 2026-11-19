@@ -9,7 +9,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/">) {
   const { user, lang } = await requireViewer();
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Mipangilio</Title>
       <Note>{error}</Note>
       <form className="grid gap-4" action={settingsAction}>

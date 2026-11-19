@@ -9,14 +9,14 @@ import { videos, youtubePublications } from "@/db/schema";
 import { readError, requireViewer } from "@/lib/viewer";
 
 export default async function VideoPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const { db, lang } = await requireViewer();
+  const { db, user, lang } = await requireViewer();
   const { id } = await params;
   const [video] = await db.select().from(videos).where(eq(videos.id, id));
   if (!video) notFound();
   const jobs = await db.select().from(youtubePublications).where(eq(youtubePublications.videoId, id));
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>{video.title}</Title>
       <Quiet>{video.status}</Quiet>
       {video.renditions?.length ? <Player title={video.title} renditions={video.renditions} poster={video.thumbnailUrl} /> : null}

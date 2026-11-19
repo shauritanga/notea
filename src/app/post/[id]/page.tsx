@@ -8,13 +8,13 @@ import { getPost } from "@/domain/social";
 import { requireViewer } from "@/lib/viewer";
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
-  const { db, lang } = await requireViewer();
+  const { db, user, lang } = await requireViewer();
   const { id } = await params;
   const post = await getPost(db, id);
   if (!post) notFound();
   const comments = await listComments(db, id);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <PostCard post={post} lang={lang} back={`/post/${id}`} />
       <CommentBox lang={lang} postId={id} />
       <Stack>

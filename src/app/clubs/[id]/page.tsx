@@ -27,7 +27,7 @@ export default async function ClubPage({ params, searchParams }: { params: Promi
   }
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>{org.name}</Title>
       <Trust verified={org.verified} lang={lang} />
       <Quiet>{org.category} · {org.region} · {org.level} · {org.section}</Quiet>

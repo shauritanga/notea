@@ -13,7 +13,7 @@ export default async function ShortlistsPage({ searchParams }: PageProps<"/">) {
   const items = lists.length ? await db.select().from(shortlistItems) : [];
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Shortlists</Title>
       <Note>{error}</Note>
       {scout.length === 0 ? <Quiet>Add a scout profile from You before keeping a shortlist.</Quiet> : null}

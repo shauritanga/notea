@@ -18,7 +18,7 @@ export default async function PlayersPage({ searchParams }: PageProps<"/">) {
     verifiedOnly: params.verified === "1",
   });
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Wachezaji</Title>
       <form className="grid gap-3">
         <input className="h-12 rounded-2xl border border-line px-4" name="q" placeholder="Name" defaultValue={typeof params.q === "string" ? params.q : ""} />

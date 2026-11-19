@@ -22,7 +22,7 @@ export default async function BusinessPage({ params, searchParams }: { params: P
   }
   const error = await readError(searchParams);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>{business.name}</Title>
       <Trust verified={business.verified} lang={lang} />
       <Quiet>{business.category} · {business.location}</Quiet>

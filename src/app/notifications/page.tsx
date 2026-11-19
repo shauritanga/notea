@@ -9,7 +9,7 @@ export default async function NotificationsPage() {
   const { db, user, lang } = await requireViewer();
   const notes = await listNotifications(db, user.id);
   return (
-    <Shell lang={lang}>
+    <Shell lang={lang} name={user.name}>
       <Title>Arifa</Title>
       <form action={readAlertsAction}>
         <Submit>Mark read</Submit>
