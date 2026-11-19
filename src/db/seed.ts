@@ -24,9 +24,30 @@ async function member(db: Database, email: string, name: string) {
   return registered.user;
 }
 
+async function onboard(db: Database, userId: string, profileTypes: Array<"fan" | "player" | "coach" | "scout">) {
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  if (!user || user.onboardedAt) return;
+  await completeOnboarding(db, userId, {
+    language: user.language === "en" ? "en" : "sw",
+    interests: ["matches"],
+    regions: ["Dar es Salaam"],
+    profileTypes,
+  });
+}
+
 export async function seedIfEmpty(db: Database) {
   const existing = await db.select().from(users).where(eq(users.email, "ada@notea.test"));
-  if (existing.length > 0) return;
+  if (existing.length > 0) {
+    const demo = await db.select().from(users);
+    const byEmail = new Map(demo.map((user) => [user.email, user]));
+    const ada = byEmail.get("ada@notea.test");
+    const shop = byEmail.get("shop@notea.test");
+    const sponsor = byEmail.get("sponsor@notea.test");
+    if (ada) await onboard(db, ada.id, ["fan"]);
+    if (shop) await onboard(db, shop.id, ["fan"]);
+    if (sponsor) await onboard(db, sponsor.id, ["fan"]);
+    return;
+  }
 
   const ada = await member(db, "ada@notea.test", "Ada Mushi");
   const fan = await member(db, "fan@notea.test", "Juma Faraji");
@@ -125,4 +146,8 @@ export async function seedIfEmpty(db: Database) {
     body: "Ten minutes of warming up cuts the chance of a muscle injury. Kairuki Hospital.",
     placement: "feed_top",
   });
+
+  await onboard(db, ada.id, ["fan"]);
+  await onboard(db, shop.id, ["fan"]);
+  await onboard(db, sponsor.id, ["fan"]);
 }

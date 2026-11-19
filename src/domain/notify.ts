@@ -27,3 +27,7 @@ export async function notify(
 export async function listNotifications(db: Database, userId: string) {
   return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
 }
+
+export async function markNotificationsRead(db: Database, userId: string) {
+  await db.update(notifications).set({ readAt: new Date() }).where(eq(notifications.userId, userId));
+}

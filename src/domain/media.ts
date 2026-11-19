@@ -51,12 +51,7 @@ export class GoogleYouTubePublisher implements YouTubePublisher {
   }
 }
 
-export function selectRendition(renditions: Rendition[], downlinkMbps: number) {
-  const budget = downlinkMbps * 1_000_000;
-  const sorted = [...renditions].sort((a, b) => a.bitrate - b.bitrate);
-  const fit = [...sorted].reverse().find((rendition) => rendition.bitrate <= budget);
-  return fit ?? sorted[0];
-}
+export { selectRendition } from "@/domain/playback";
 
 const MAX_ATTEMPTS = 3;
 
