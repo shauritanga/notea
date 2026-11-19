@@ -1,10 +1,11 @@
 export const instant = false;
 
 import { and, eq } from "drizzle-orm";
-import { logoutAction, profileAction, switchAction } from "@/app/actions";
+import { addProfileAction, logoutAction, profileAction, switchAction } from "@/app/actions";
 import { Area, Card, Choice, Field, Note, Quiet, Shell, Stack, Submit, Title } from "@/components/ui";
 import { businessMembers, businesses, organizationMembers, organizations, profiles } from "@/db/schema";
 import { getActiveContext } from "@/domain/accounts";
+import { t } from "@/i18n/messages";
 import { readError, requireViewer } from "@/lib/viewer";
 
 export default async function YouPage({ searchParams }: PageProps<"/">) {
@@ -16,12 +17,30 @@ export default async function YouPage({ searchParams }: PageProps<"/">) {
   const shopRows = await db.select().from(businesses);
   const active = await getActiveContext(db, user.id);
   const error = await readError(searchParams);
+  const missing = (["fan", "player", "coach", "scout"] as const).filter((type) => !mine.some((profile) => profile.type === type));
   return (
     <Shell lang={lang}>
       <Title>{user.name}</Title>
       <Quiet>{active ? `Posting as ${active.kind}` : "Choose who you are posting as."}</Quiet>
       <Note>{error}</Note>
       <Stack>
+        {missing.length > 0 ? (
+          <Card>
+            <form className="grid gap-3" action={addProfileAction}>
+              <label className="grid gap-2 text-sm font-medium">
+                {t(lang, "addProfile")}
+                <select className="h-12 rounded-2xl border border-line bg-white px-4 text-base font-normal" name="type" defaultValue={missing[0]}>
+                  {missing.map((type) => (
+                    <option key={type} value={type}>
+                      {t(lang, type === "fan" ? "roleFan" : type === "player" ? "rolePlayer" : type === "coach" ? "roleCoach" : "roleScout")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Submit>{t(lang, "addProfile")}</Submit>
+            </form>
+          </Card>
+        ) : null}
         {mine.map((profile) => (
           <Card key={profile.id}>
             <div className="flex items-center justify-between">
@@ -39,12 +58,16 @@ export default async function YouPage({ searchParams }: PageProps<"/">) {
               <Area label="Bio" name="bio" defaultValue={profile.bio} />
               <Field label="Region" name="region" defaultValue={profile.region ?? ""} />
               <Choice label="Visibility" name="visibility" options={["public", "private"]} defaultValue={profile.visibility} />
-              <Field label="Position" name="position" defaultValue={profile.position ?? ""} />
-              <Field label="Foot" name="preferredFoot" defaultValue={profile.preferredFoot ?? ""} />
-              <Area label="History" name="footballHistory" defaultValue={profile.footballHistory ?? ""} />
-              <Area label="Achievements" name="achievements" defaultValue={profile.achievements ?? ""} />
-              <Field label="Level" name="level" defaultValue={profile.level ?? ""} />
-              <Field label="Section" name="section" defaultValue={profile.section ?? ""} />
+              {profile.type === "fan" ? null : (
+                <>
+                  <Field label="Position" name="position" defaultValue={profile.position ?? ""} />
+                  <Field label="Foot" name="preferredFoot" defaultValue={profile.preferredFoot ?? ""} />
+                  <Area label="History" name="footballHistory" defaultValue={profile.footballHistory ?? ""} />
+                  <Area label="Achievements" name="achievements" defaultValue={profile.achievements ?? ""} />
+                  <Field label="Level" name="level" defaultValue={profile.level ?? ""} />
+                  <Field label="Section" name="section" defaultValue={profile.section ?? ""} />
+                </>
+              )}
               <Field label="Private phone" name="contactPhone" defaultValue={profile.contactPhone ?? ""} />
               <Field label="Private email" name="contactEmail" defaultValue={profile.contactEmail ?? ""} />
               <Field label="Precise location" name="preciseLocation" defaultValue={profile.preciseLocation ?? ""} />

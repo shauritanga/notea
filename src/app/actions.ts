@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import {
   changePassword,
+  addProfile,
   completeOnboarding,
   deactivateAccount,
   login,
@@ -61,8 +62,10 @@ async function storedFile(file: FormDataEntryValue | null) {
 export async function registerAction(formData: FormData) {
   const back = "/register";
   try {
-    const email = String(formData.get("email") || "");
-    const phone = String(formData.get("phone") || "");
+    const identifier = String(formData.get("identifier") || formData.get("email") || formData.get("phone") || "").trim();
+    const email = identifier.includes("@") ? identifier : String(formData.get("email") || "");
+    const phone = identifier.includes("@") ? String(formData.get("phone") || "") : identifier;
+    const language = formData.get("language") === "en" || (await cookies()).get("notea_lang")?.value === "en" ? "en" : "sw";
     const result = await (await import("@/db/client")).ready().then((db) =>
       registerIndividual(db, {
         name: String(formData.get("name") || ""),
@@ -70,7 +73,7 @@ export async function registerAction(formData: FormData) {
         email: email || undefined,
         phone: phone || undefined,
         termsAccepted: formData.get("terms") === "on",
-        language: formData.get("language") === "en" ? "en" : "sw",
+        language,
       }),
     );
     await setSession(result.token);
@@ -140,21 +143,10 @@ export async function onboardAction(formData: FormData) {
     const { db, user } = { db: viewer.db, user: viewer.user! };
     const types = formData.getAll("profile").map(String).filter((type) => ["fan", "player", "coach", "scout"].includes(type)) as Array<"fan" | "player" | "coach" | "scout">;
     await completeOnboarding(db, user.id, {
-      language: formData.get("language") === "en" ? "en" : "sw",
-      interests: formData.getAll("interest").map(String),
-      regions: formData.getAll("region").map(String),
-      profileTypes: types,
-      dateOfBirth: String(formData.get("dateOfBirth") || "") || undefined,
-      guardianName: String(formData.get("guardianName") || "") || undefined,
-      guardianConsent: formData.get("guardianConsent") === "on",
-      player: {
-        position: String(formData.get("position") || "") || undefined,
-        preferredFoot: String(formData.get("preferredFoot") || "") || undefined,
-        footballHistory: String(formData.get("footballHistory") || "") || undefined,
-        achievements: String(formData.get("achievements") || "") || undefined,
-        level: String(formData.get("level") || "") || undefined,
-        section: String(formData.get("section") || "") || undefined,
-      },
+      language: user.language === "en" ? "en" : "sw",
+      interests: [],
+      regions: [],
+      profileTypes: types.length > 0 ? types : ["fan"],
     });
   } catch (error) {
     fail("/onboarding", error);
@@ -262,6 +254,18 @@ export async function switchAction(formData: FormData) {
       kind: String(formData.get("kind")) as "profile" | "organization" | "business",
       id: String(formData.get("id")),
     });
+  } catch (error) {
+    fail("/you", error);
+  }
+  redirect("/you");
+}
+
+export async function addProfileAction(formData: FormData) {
+  try {
+    const { db, user } = await requireViewer();
+    const type = String(formData.get("type") || "");
+    if (type !== "fan" && type !== "player" && type !== "coach" && type !== "scout") fail("/you", new Error("Choose a profile"));
+    await addProfile(db, user.id, type);
   } catch (error) {
     fail("/you", error);
   }

@@ -8,18 +8,18 @@ import { getViewer } from "@/lib/viewer";
 export default async function WelcomePage() {
   const { user, lang } = await getViewer();
   if (user?.onboardedAt) redirect("/");
+  if (user) redirect(user.status === "pending_verification" ? "/verify" : "/onboarding");
   return (
-    <Frame splash>
-      <div className="app-splash-hero">
-        <p className="text-sm font-semibold tracking-wide text-[#d7e7df]">NOTEA</p>
+    <Frame>
+      <div className="app-auth-intro">
         <h1>{t(lang, "welcomeTitle")}</h1>
-        <p className="max-w-[28ch] text-sm leading-6 text-[#d7e7df]">{t(lang, "welcomeBody")}</p>
+        <p>{t(lang, "welcomeBody")}</p>
       </div>
-      <div className="app-splash-sheet">
-        <Ghost href="/register" solid>{t(lang, "register")}</Ghost>
+      <div className="app-auth-actions">
+        <Ghost href="/register" solid>
+          {t(lang, "register")}
+        </Ghost>
         <Ghost href="/login">{t(lang, "login")}</Ghost>
-        <Ghost href="/clubs/new">{t(lang, "club")}</Ghost>
-        <Ghost href="/businesses/new">{t(lang, "business")}</Ghost>
       </div>
     </Frame>
   );
