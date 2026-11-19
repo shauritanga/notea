@@ -102,6 +102,19 @@ export function Ghost({ href, children, solid = false }: { href: string; childre
   );
 }
 
+export function Check({ label, name }: { label: string; name: string }) {
+  return (
+    <label className="app-check">
+      <input name={name} type="checkbox" required />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+export function AuthFoot({ children }: { children: React.ReactNode }) {
+  return <div className="app-foot">{children}</div>;
+}
+
 export function Trust({ verified, lang }: { verified: boolean; lang: Lang }) {
   return <span className="text-xs font-medium text-muted">{verified ? t(lang, "verified") : t(lang, "unverified")}</span>;
 }
@@ -175,12 +188,44 @@ function BellIcon() {
   );
 }
 
-export function Frame({ children, splash = false }: { children: React.ReactNode; splash?: boolean }) {
+export function Frame({
+  children,
+  back,
+  corner,
+  bg,
+}: {
+  children: React.ReactNode;
+  back?: string;
+  corner?: React.ReactNode;
+  bg?: string;
+}) {
   return (
     <div className="app-stage">
       <div className="app-screen">
-        {splash ? <div className="app-splash">{children}</div> : <div className="app-auth"><Link className="app-mark" href="/welcome">Notea</Link>{children}</div>}
+        {bg ? <div className="app-auth-bg" style={{ backgroundImage: `url(${bg})` }} /> : null}
+        <div className="app-auth">
+          <div className="app-auth-top">
+            {back ? (
+              <Link className="app-auth-back" href={back} aria-label="Back">
+                <BackIcon />
+              </Link>
+            ) : null}
+            <Link className="app-mark" href="/welcome">
+              Notea
+            </Link>
+            {corner ? <div className="app-auth-corner">{corner}</div> : null}
+          </div>
+          <div className="app-auth-body">{children}</div>
+        </div>
       </div>
     </div>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
   );
 }

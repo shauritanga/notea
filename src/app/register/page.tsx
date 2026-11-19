@@ -2,7 +2,8 @@ export const instant = false;
 
 import Link from "next/link";
 import { registerAction } from "@/app/actions";
-import { Field, Frame, Note, Submit, Title } from "@/components/ui";
+import { PasswordField } from "@/components/password-field";
+import { AuthFoot, Check, Field, Frame, Note, Quiet, Submit, Title } from "@/components/ui";
 import { t } from "@/i18n/messages";
 import { getViewer, readError } from "@/lib/viewer";
 
@@ -10,22 +11,37 @@ export default async function RegisterPage({ searchParams }: PageProps<"/">) {
   const { lang } = await getViewer();
   const error = await readError(searchParams);
   return (
-    <Frame>
+    <Frame back="/welcome">
       <Title>{t(lang, "register")}</Title>
+      <Quiet>{t(lang, "registerBody")}</Quiet>
       <Note>{error}</Note>
       <form className="grid gap-4" action={registerAction}>
         <Field label={t(lang, "name")} name="name" required />
-        <Field label={t(lang, "identifier")} name="identifier" required placeholder={lang === "en" ? "name@email.com or 07…" : "jina@barua.com au 07…"} />
-        <Field label={t(lang, "password")} name="password" type="password" required placeholder={lang === "en" ? "At least 8 characters" : "Angalau herufi 8"} />
-        <label className="flex items-center gap-3 text-sm">
-          <input name="terms" type="checkbox" required />
-          {t(lang, "terms")}
-        </label>
+        <Field
+          label={t(lang, "identifier")}
+          name="identifier"
+          required
+          placeholder={lang === "en" ? "name@email.com or 07…" : "jina@barua.com au 07…"}
+        />
+        <PasswordField
+          label={t(lang, "password")}
+          name="password"
+          required
+          placeholder={lang === "en" ? "At least 8 characters" : "Angalau herufi 8"}
+          showLabel={t(lang, "showPassword")}
+          hideLabel={t(lang, "hidePassword")}
+        />
+        <Check label={t(lang, "terms")} name="terms" />
         <Submit>{t(lang, "continue")}</Submit>
       </form>
-      <Link className="text-sm font-semibold text-pitch" href="/login">
-        {t(lang, "login")}
-      </Link>
+      <AuthFoot>
+        <p>
+          {t(lang, "haveAccount")}{" "}
+          <Link className="app-link-strong" href="/login">
+            {t(lang, "login")}
+          </Link>
+        </p>
+      </AuthFoot>
     </Frame>
   );
 }
