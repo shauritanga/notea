@@ -1,5 +1,5 @@
 import { clickAction, commentAction, followAction, likeAction, reportAction, saveAction, shareAction } from "@/app/actions";
-import { Card, Submit } from "@/components/ui";
+import { Submit } from "@/components/ui";
 import { t, type Lang } from "@/i18n/messages";
 
 export function PostCard({
@@ -11,15 +11,24 @@ export function PostCard({
   lang: Lang;
   back: string;
 }) {
+  const initials = post.publisherLabel
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
   return (
-    <Card>
-      <div className="flex items-baseline justify-between gap-3">
-        <strong>{post.publisherLabel}</strong>
-        <span className="text-xs uppercase tracking-wide text-muted">{post.category}</span>
+    <article className="app-post">
+      <div className="app-post-head">
+        <span className="app-avatar" aria-hidden>{initials}</span>
+        <div>
+          <strong>{post.publisherLabel}</strong>
+          <span>{post.category}</span>
+        </div>
       </div>
-      {post.body ? <p className="leading-7">{post.body}</p> : null}
-      {post.mediaUrl ? <img className="w-full rounded-2xl" src={post.mediaUrl} alt="" /> : null}
-      <div className="flex flex-wrap gap-2">
+      {post.body ? <p>{post.body}</p> : null}
+      {post.mediaUrl ? <img src={post.mediaUrl} alt="" /> : null}
+      <div className="app-actions">
         {[
           [likeAction, t(lang, "like")],
           [saveAction, t(lang, "save")],
@@ -28,16 +37,12 @@ export function PostCard({
           <form key={String(label)} action={action as (formData: FormData) => Promise<void>}>
             <input type="hidden" name="postId" value={post.id} />
             <input type="hidden" name="back" value={back} />
-            <button className="rounded-full border border-line px-3 py-2 text-sm" type="submit">
-              {label as string}
-            </button>
+            <button type="submit">{label as string}</button>
           </form>
         ))}
-        <a className="rounded-full border border-line px-3 py-2 text-sm" href={`/post/${post.id}`}>
-          {t(lang, "comment")}
-        </a>
+        <a href={`/post/${post.id}`}>{t(lang, "comment")}</a>
       </div>
-    </Card>
+    </article>
   );
 }
 
@@ -51,16 +56,16 @@ export function CampaignCard({
   back: string;
 }) {
   return (
-    <Card>
-      <p className="text-xs uppercase tracking-wide text-grass">{campaign.sponsorKey === "kairuki" ? "Kairuki Hospital" : t(lang, "ads")}</p>
+    <article className="app-sponsor">
+      <p>{campaign.sponsorKey === "kairuki" ? "Kairuki Hospital" : t(lang, "ads")}</p>
       <strong>{campaign.name}</strong>
-      <p className="leading-7">{campaign.body}</p>
+      <p>{campaign.body}</p>
       <form action={clickAction}>
         <input type="hidden" name="campaignId" value={campaign.id} />
         <input type="hidden" name="back" value={back} />
         <Submit>{t(lang, "continue")}</Submit>
       </form>
-    </Card>
+    </article>
   );
 }
 

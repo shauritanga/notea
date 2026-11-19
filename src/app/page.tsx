@@ -2,7 +2,7 @@ export const instant = false;
 
 import Link from "next/link";
 import { CampaignCard, PostCard } from "@/components/post";
-import { Quiet, Shell, Stack } from "@/components/ui";
+import { Quiet, Shell } from "@/components/ui";
 import { t } from "@/i18n/messages";
 import { requireViewer } from "@/lib/viewer";
 import { getFeed } from "@/domain/social";
@@ -19,14 +19,14 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
   const items = await getFeed(db, user.id, mode);
   return (
     <Shell lang={lang}>
-      <div className="flex gap-2 overflow-x-auto">
+      <div className="app-segments">
         {tabs.map((tab) => (
-          <Link key={tab} className={`rounded-full px-4 py-2 text-sm ${tab === mode ? "bg-pitch text-white" : "border border-line"}`} href={`/?tab=${tab}`}>
+          <Link key={tab} className={tab === mode ? "is-on" : ""} href={`/?tab=${tab}`}>
             {t(lang, labels[tab])}
           </Link>
         ))}
       </div>
-      <Stack>
+      <div className="app-feed">
         {items.length === 0 ? <Quiet>{t(lang, "empty")}</Quiet> : null}
         {items.map((item) =>
           item.kind === "campaign" ? (
@@ -35,7 +35,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
             <PostCard key={item.post.id} post={item.post} lang={lang} back={`/?tab=${mode}`} />
           ),
         )}
-      </Stack>
+      </div>
     </Shell>
   );
 }
