@@ -1,0 +1,24 @@
+---
+description: Commit messages stay free of assistant signatures
+alwaysApply: true
+---
+
+# Commit messages
+
+Write commit messages as plain descriptions of the change. Do not sign them.
+
+- Do not add an assistant, model, or tool signature.
+- Do not add "Generated with", "Co-Authored-By", or similar trailers for an AI assistant.
+- One short subject line. A second sentence is optional when the reason is not obvious.
+
+```
+Add organization verification review
+
+```
+
+```
+Add organization verification review
+
+Generated with Cursor
+Co-Authored-By: Grok
+```
