@@ -29,7 +29,7 @@ export default async function YouPage({ searchParams }: PageProps<"/">) {
             <form className="grid gap-3" action={addProfileAction}>
               <label className="grid gap-2 text-sm font-medium">
                 {t(lang, "addProfile")}
-                <select className="h-12 rounded-2xl border border-line bg-[#171c18] px-4 text-base font-normal text-white" name="type" defaultValue={missing[0]}>
+                <select className="h-12 rounded-2xl border border-line bg-fill px-4 text-base font-normal text-ink" name="type" defaultValue={missing[0]}>
                   {missing.map((type) => (
                     <option key={type} value={type}>
                       {t(lang, type === "fan" ? "roleFan" : type === "player" ? "rolePlayer" : type === "coach" ? "roleCoach" : "roleScout")}
@@ -50,7 +50,7 @@ export default async function YouPage({ searchParams }: PageProps<"/">) {
             <form action={switchAction}>
               <input type="hidden" name="kind" value="profile" />
               <input type="hidden" name="id" value={profile.id} />
-              <button className="text-sm font-semibold text-grass" type="submit">Use this profile</button>
+              <button className="text-sm font-semibold text-accent-ink" type="submit">Use this profile</button>
             </form>
             <form className="grid gap-3" action={profileAction}>
               <input type="hidden" name="profileId" value={profile.id} />

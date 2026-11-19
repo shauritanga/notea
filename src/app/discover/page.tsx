@@ -17,7 +17,7 @@ export default async function DiscoverPage({ searchParams }: PageProps<"/">) {
     <Shell lang={lang} name={user.name}>
       <Title>{t(lang, "find")}</Title>
       <form>
-        <input className="h-12 w-full rounded-full border border-line bg-[#171c18] px-4 text-white" name="q" defaultValue={query} placeholder={t(lang, "search")} />
+        <input className="h-12 w-full rounded-full border border-line bg-fill px-4 text-ink" name="q" defaultValue={query} placeholder={t(lang, "search")} />
       </form>
       <div className="grid grid-cols-2 gap-3">
         <Ghost href="/players">{t(lang, "players")}</Ghost>

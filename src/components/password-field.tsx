@@ -23,7 +23,7 @@ export function PasswordField({
       {label}
       <span className="app-password">
         <input
-          className="h-12 w-full rounded-2xl border border-line bg-[#171c18] px-4 text-base font-normal text-white outline-none focus:border-[var(--lime)]"
+          className="h-12 w-full rounded-2xl border border-line bg-fill px-4 text-base font-normal text-ink outline-none focus:border-[var(--lime)]"
           name={name}
           type={visible ? "text" : "password"}
           required={required}

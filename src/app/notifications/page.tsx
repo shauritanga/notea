@@ -23,7 +23,7 @@ export default async function NotificationsPage() {
               <span className="text-xs uppercase text-muted">{note.type}</span>
             </div>
             <p className="leading-6">{note.body}</p>
-            {note.readAt ? null : <span className="text-xs text-grass">New</span>}
+            {note.readAt ? null : <span className="text-xs text-accent-ink">New</span>}
           </Card>
         ))}
       </Stack>

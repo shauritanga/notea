@@ -1,17 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #101410;
-  --ink: #f4f6f1;
-  --muted: #9aa396;
-  --line: #2a312b;
+  color-scheme: light dark;
+  --paper: #f5f7f1;
+  --ink: #10140b;
+  --muted: #666f60;
+  --line: #d8ded0;
   --pitch: #d6ff4a;
   --grass: #d6ff4a;
   --clay: #d6ff4a;
   --lime: #d6ff4a;
-  --card: #1b211c;
+  --card: #ffffff;
+  --fill: #eef1e7;
+  --chip: #e4e9dc;
+  --stage: #e3e7da;
+  --on-lime: #111111;
+  --accent-ink: #4d6b00;
+  --warn-bg: #fdecc8;
+  --warn-ink: #7a4b06;
   --background: var(--paper);
   --foreground: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #101410;
+    --ink: #f4f6f1;
+    --muted: #9aa396;
+    --line: #2a312b;
+    --card: #1b211c;
+    --fill: #171c18;
+    --chip: #1c221d;
+    --stage: #0b1411;
+    --on-lime: #111111;
+    --accent-ink: var(--lime);
+    --warn-bg: #2a2218;
+    --warn-ink: #f3d7a1;
+  }
 }
 
 @theme inline {
@@ -23,6 +48,13 @@
   --color-grass: var(--grass);
   --color-clay: var(--clay);
   --color-card: var(--card);
+  --color-fill: var(--fill);
+  --color-chip: var(--chip);
+  --color-stage: var(--stage);
+  --color-on-lime: var(--on-lime);
+  --color-accent-ink: var(--accent-ink);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-outfit);
@@ -31,14 +63,14 @@
 
 html,
 body {
-  background: #0b1411;
+  background: var(--stage);
   color: var(--ink);
   font-family: var(--font-outfit), sans-serif;
 }
 
 .app-stage {
   min-height: 100dvh;
-  background: #0b1411;
+  background: var(--stage);
 }
 
 .app-screen {
@@ -65,7 +97,7 @@ body {
   font-family: var(--font-fraunces), serif;
   font-size: 1.45rem;
   line-height: 1;
-  color: white;
+  color: var(--ink);
 }
 
 .app-lang {
@@ -73,7 +105,7 @@ body {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: white;
+  background: var(--card);
 }
 
 .app-lang button {
@@ -86,7 +118,7 @@ body {
 
 .app-lang button.is-on {
   background: var(--lime);
-  color: #111;
+  color: var(--on-lime);
 }
 
 .app-main {
@@ -131,7 +163,7 @@ body {
 
 .app-segments a.is-on {
   background: var(--lime);
-  color: #111;
+  color: var(--on-lime);
 }
 
 .app-feed {
@@ -174,7 +206,7 @@ body {
   place-items: center;
   border-radius: 999px;
   background: var(--lime);
-  color: #111;
+  color: var(--on-lime);
   font-size: 0.78rem;
   font-weight: 700;
 }
@@ -206,16 +238,16 @@ body {
   border: 0;
   border-radius: 1.2rem;
   background: var(--lime);
-  color: #111;
+  color: var(--on-lime);
 }
 
 .app-sponsor p,
 .app-sponsor strong {
-  color: #111;
+  color: var(--on-lime);
 }
 
 .app-sponsor button {
-  background: #111;
+  background: var(--on-lime);
   color: var(--lime);
 }
 
@@ -240,13 +272,13 @@ body {
 
 .app-ghost {
   border: 1px solid var(--line);
-  background: #171c18;
-  color: white;
+  background: var(--fill);
+  color: var(--ink);
 }
 
 .app-solid {
   background: var(--lime);
-  color: #111;
+  color: var(--on-lime);
 }
 
 .app-auth-intro {
@@ -259,7 +291,7 @@ body {
   font-size: 1.7rem;
   font-weight: 560;
   line-height: 1.2;
-  color: white;
+  color: var(--ink);
 }
 
 .app-auth-intro p {
@@ -297,7 +329,7 @@ body {
   flex: none;
   border: 1.5px solid var(--line);
   border-radius: 0.3rem;
-  background: #171c18;
+  background: var(--fill);
   cursor: pointer;
 }
 
@@ -315,7 +347,7 @@ body {
   top: 0.14rem;
   width: 0.28rem;
   height: 0.55rem;
-  border: solid #111;
+  border: solid var(--on-lime);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -349,8 +381,8 @@ body {
   height: 2.3rem;
   place-items: center;
   border-radius: 999px;
-  background: #1c221d;
-  color: white;
+  background: var(--chip);
+  color: var(--ink);
 }
 
 
@@ -384,7 +416,7 @@ body {
 }
 
 .app-tab.is-active {
-  color: var(--lime);
+  color: var(--accent-ink);
 }
 
 .app-tab-center {
@@ -394,7 +426,7 @@ body {
   margin-top: -1.15rem;
   border-radius: 999px;
   background: var(--lime);
-  color: #111;
+  color: var(--on-lime);
   box-shadow: 0 8px 18px rgba(214, 255, 74, 0.28);
 }
 
@@ -414,9 +446,10 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
+  opacity: 0.45;
   background-position: center;
   background-size: cover;
-  filter: blur(7px) brightness(1.15) saturate(1.1);
+  filter: blur(9px) brightness(1.2) saturate(1.05);
   transform: scale(1.1);
 }
 
@@ -424,7 +457,13 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(16, 20, 11, 0.1) 0%, rgba(16, 20, 11, 0.3) 45%, var(--paper) 92%);
+  background: linear-gradient(
+    180deg,
+    var(--paper) 0%,
+    color-mix(in srgb, var(--paper) 55%, transparent) 22%,
+    color-mix(in srgb, var(--paper) 40%, transparent) 45%,
+    var(--paper) 90%
+  );
 }
 
 .app-auth-top {
@@ -444,7 +483,7 @@ body {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 999px;
-  color: white;
+  color: var(--ink);
 }
 
 .app-auth-body {
@@ -463,7 +502,7 @@ body {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 999px;
-  color: white;
+  color: var(--ink);
 }
 
 .app-check {
@@ -494,7 +533,7 @@ body {
 
 .app-foot .app-link-strong {
   font-weight: 700;
-  color: var(--lime);
+  color: var(--accent-ink);
 }
 
 .app-foot .app-link-quiet {
@@ -593,8 +632,8 @@ textarea {
 input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 select,
 textarea {
-  background: #171c18;
-  color: white;
+  background: var(--fill);
+  color: var(--ink);
 }
 
 input::placeholder,
@@ -603,5 +642,5 @@ textarea::placeholder {
 }
 
 ::selection {
-  background: #d9eadf;
+  background: rgba(214, 255, 74, 0.35);
 }

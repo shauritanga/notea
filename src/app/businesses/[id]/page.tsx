@@ -27,13 +27,13 @@ export default async function BusinessPage({ params, searchParams }: { params: P
       <Trust verified={business.verified} lang={lang} />
       <Quiet>{business.category} · {business.location}</Quiet>
       <p className="leading-7">{business.description}</p>
-      {business.website ? <a className="text-sm text-pitch" href={business.website}>{business.website}</a> : null}
-      {business.whatsapp ? <a className="text-sm text-pitch" href={business.whatsapp}>WhatsApp</a> : null}
+      {business.website ? <a className="text-sm text-accent-ink" href={business.website}>{business.website}</a> : null}
+      {business.whatsapp ? <a className="text-sm text-accent-ink" href={business.whatsapp}>WhatsApp</a> : null}
       <form action={followAction}>
         <input type="hidden" name="targetType" value="business" />
         <input type="hidden" name="targetId" value={business.id} />
         <input type="hidden" name="back" value={`/businesses/${id}`} />
-        <button className="text-sm font-semibold text-grass" type="submit">{t(lang, "follow")}</button>
+        <button className="text-sm font-semibold text-accent-ink" type="submit">{t(lang, "follow")}</button>
       </form>
       <Note>{error}</Note>
       <Stack>

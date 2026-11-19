@@ -75,7 +75,7 @@ export function FollowButton({ lang, targetType, targetId, back }: { lang: Lang;
       <input type="hidden" name="targetType" value={targetType} />
       <input type="hidden" name="targetId" value={targetId} />
       <input type="hidden" name="back" value={back} />
-      <button className="text-sm font-semibold text-grass" type="submit">
+      <button className="text-sm font-semibold text-accent-ink" type="submit">
         {t(lang, "follow")}
       </button>
     </form>
@@ -89,7 +89,7 @@ export function CommentBox({ lang, postId }: { lang: Lang; postId: string }) {
       <form className="grid gap-3" action={commentAction}>
         <input type="hidden" name="postId" value={postId} />
         <input type="hidden" name="back" value={back} />
-        <textarea className="min-h-24 rounded-2xl border border-line bg-[#171c18] px-4 py-3 text-white" name="body" placeholder={t(lang, "comment")} />
+        <textarea className="min-h-24 rounded-2xl border border-line bg-fill px-4 py-3 text-ink" name="body" placeholder={t(lang, "comment")} />
         <Submit>{t(lang, "comment")}</Submit>
       </form>
       <form action={reportAction}>

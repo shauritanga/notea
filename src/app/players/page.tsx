@@ -32,7 +32,7 @@ export default async function PlayersPage({ searchParams }: PageProps<"/">) {
             <input type="checkbox" name="verified" value="1" /> Verified only
           </label>
         </div>
-        <button className="h-12 rounded-full bg-pitch text-white" type="submit">Tafuta</button>
+        <button className="h-12 rounded-full bg-pitch text-ink" type="submit">Tafuta</button>
       </form>
       <Stack>
         {players.length === 0 ? <Quiet>No players match.</Quiet> : null}

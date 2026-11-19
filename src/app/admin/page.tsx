@@ -48,7 +48,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/">) {
       <Title>Usimamizi</Title>
       <div className="flex gap-2 overflow-x-auto">
         {sections.map((item) => (
-          <Link key={item} className={`rounded-full px-3 py-2 text-sm ${item === section ? "bg-pitch text-[#111]" : "border border-line"}`} href={`/admin?section=${item}`}>
+          <Link key={item} className={`rounded-full px-3 py-2 text-sm ${item === section ? "bg-pitch text-on-lime" : "border border-line"}`} href={`/admin?section=${item}`}>
             {item}
           </Link>
         ))}
@@ -109,7 +109,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/">) {
               <form className="flex gap-2" action={moderateAction}>
                 <input type="hidden" name="reportId" value={report.id} />
                 <button className="rounded-full border border-line px-3 py-2 text-sm" name="decision" value="dismissed" type="submit">Dismiss</button>
-                <button className="rounded-full bg-pitch px-3 py-2 text-sm text-white" name="decision" value="removed" type="submit">Remove</button>
+                <button className="rounded-full bg-pitch px-3 py-2 text-sm text-ink" name="decision" value="removed" type="submit">Remove</button>
               </form>
             </Card>
           ))}
@@ -153,7 +153,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/">) {
           <Field label="User id" name="userId" required />
           <Choice label="Role" name="role" options={["platform_admin", "content_moderator", "verification_officer", "advertising_manager", "sponsor_manager", "customer_support"]} />
           <div className="flex gap-3">
-            <button className="h-12 rounded-full bg-pitch px-4 text-white" name="intent" value="grant" type="submit">Grant</button>
+            <button className="h-12 rounded-full bg-pitch px-4 text-ink" name="intent" value="grant" type="submit">Grant</button>
             <button className="h-12 rounded-full border border-line px-4" name="intent" value="revoke" type="submit">Revoke</button>
           </div>
         </form>

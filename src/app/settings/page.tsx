@@ -60,7 +60,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/">) {
       <Stack>
         <Quiet>Deactivation closes the account until you recover it. Deletion is a request. Notea keeps the record until an administrator completes it.</Quiet>
         <form action={deactivateAction}><button className="text-sm" type="submit">Deactivate</button></form>
-        <form action={deletionAction}><button className="text-sm text-clay" type="submit">Request deletion</button></form>
+        <form action={deletionAction}><button className="text-sm text-accent-ink" type="submit">Request deletion</button></form>
       </Stack>
     </Shell>
   );

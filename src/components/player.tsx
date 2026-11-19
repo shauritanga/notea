@@ -29,7 +29,7 @@ export function Player({
       />
       <label className="grid gap-2 text-sm text-muted">
         {chosen.quality}
-        <select className="h-12 rounded-2xl border border-line bg-[#171c18] px-4 text-white" value={String(mbps)} onChange={(event) => setMbps(Number(event.target.value))}>
+        <select className="h-12 rounded-2xl border border-line bg-fill px-4 text-ink" value={String(mbps)} onChange={(event) => setMbps(Number(event.target.value))}>
           <option value="1">360p</option>
           <option value="5">720p</option>
         </select>

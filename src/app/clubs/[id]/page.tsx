@@ -36,7 +36,7 @@ export default async function ClubPage({ params, searchParams }: { params: Promi
         <input type="hidden" name="targetType" value="organization" />
         <input type="hidden" name="targetId" value={org.id} />
         <input type="hidden" name="back" value={`/clubs/${id}`} />
-        <button className="text-sm font-semibold text-grass" type="submit">{t(lang, "follow")}</button>
+        <button className="text-sm font-semibold text-accent-ink" type="submit">{t(lang, "follow")}</button>
       </form>
       <Note>{error}</Note>
       <Stack>

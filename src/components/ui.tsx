@@ -8,15 +8,15 @@ export function Quiet({ children }: { children: React.ReactNode }) {
 
 export function Note({ children }: { children?: string }) {
   if (!children) return null;
-  return <p className="rounded-2xl bg-[#2a2218] px-4 py-3 text-sm leading-6 text-[#f3d7a1]">{children}</p>;
+  return <p className="rounded-2xl bg-warn-bg px-4 py-3 text-sm leading-6 text-warn-ink">{children}</p>;
 }
 
 export function Title({ children }: { children: React.ReactNode }) {
-  return <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-white">{children}</h1>;
+  return <h1 className="text-[1.65rem] font-semibold leading-tight tracking-tight text-ink">{children}</h1>;
 }
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-lg font-semibold text-white">{children}</h2>;
+  return <h2 className="text-lg font-semibold text-ink">{children}</h2>;
 }
 
 export function Stack({ children }: { children: React.ReactNode }) {
@@ -46,7 +46,7 @@ export function Field({
     <label className="grid gap-2 text-sm font-medium">
       {label}
       <input
-        className="h-12 rounded-2xl border border-line bg-[#171c18] px-4 text-base font-normal text-white outline-none focus:border-[var(--lime)]"
+        className="h-12 rounded-2xl border border-line bg-fill px-4 text-base font-normal text-ink outline-none focus:border-[var(--lime)]"
         name={name}
         type={type}
         required={required}
@@ -62,7 +62,7 @@ export function Area({ label, name, required = false, defaultValue = "" }: { lab
     <label className="grid gap-2 text-sm font-medium">
       {label}
       <textarea
-        className="min-h-28 rounded-2xl border border-line bg-[#171c18] px-4 py-3 text-base font-normal text-white outline-none focus:border-[var(--lime)]"
+        className="min-h-28 rounded-2xl border border-line bg-fill px-4 py-3 text-base font-normal text-ink outline-none focus:border-[var(--lime)]"
         name={name}
         required={required}
         defaultValue={defaultValue}
@@ -75,7 +75,7 @@ export function Choice({ label, name, options, defaultValue }: { label: string; 
   return (
     <label className="grid gap-2 text-sm font-medium">
       {label}
-      <select className="h-12 rounded-2xl border border-line bg-[#171c18] px-4 text-base font-normal text-white" name={name} defaultValue={defaultValue ?? options[0]}>
+      <select className="h-12 rounded-2xl border border-line bg-fill px-4 text-base font-normal text-ink" name={name} defaultValue={defaultValue ?? options[0]}>
         {options.map((option) => (
           <option key={option} value={option}>
             {option.replaceAll("_", " ")}
@@ -88,7 +88,7 @@ export function Choice({ label, name, options, defaultValue }: { label: string; 
 
 export function Submit({ children }: { children: React.ReactNode }) {
   return (
-    <button className="h-12 rounded-full bg-[var(--lime)] px-5 text-base font-semibold text-[#111]" type="submit">
+    <button className="h-12 rounded-full bg-[var(--lime)] px-5 text-base font-semibold text-on-lime" type="submit">
       {children}
     </button>
   );
