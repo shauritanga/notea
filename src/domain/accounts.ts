@@ -180,7 +180,7 @@ export async function requestRecoveryCode(db: Database, identifier: string) {
     : await db.select().from(users).where(eq(users.phone, phone!));
   if (!user) throw new AppError("not_found", "Account not found");
   if (user.status !== "deactivated") throw new AppError("not_deactivated", "This account is still open");
-  const channel = email ? "email" : "phone";
+  const channel: "email" | "phone" = email ? "email" : "phone";
   const code = await issueCode(db, user.id, channel);
   return { userId: user.id, code, channel };
 }

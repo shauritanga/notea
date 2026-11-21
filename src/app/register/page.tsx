@@ -2,6 +2,7 @@ export const instant = false;
 
 import Link from "next/link";
 import { registerAction } from "@/app/actions";
+import { IdentifierField } from "@/components/identifier-field";
 import { PasswordField } from "@/components/password-field";
 import { AuthFoot, Check, Field, Frame, Note, Quiet, Submit, Title } from "@/components/ui";
 import { t } from "@/i18n/messages";
@@ -17,11 +18,12 @@ export default async function RegisterPage({ searchParams }: PageProps<"/">) {
       <Note>{error}</Note>
       <form className="grid gap-4" action={registerAction}>
         <Field label={t(lang, "name")} name="name" required />
-        <Field
+        <IdentifierField
           label={t(lang, "identifier")}
-          name="identifier"
-          required
-          placeholder={lang === "en" ? "name@email.com or 07…" : "jina@barua.com au 07…"}
+          emailLabel={t(lang, "email")}
+          phoneLabel={t(lang, "phone")}
+          emailPlaceholder={t(lang, "emailPlaceholder")}
+          phonePlaceholder={t(lang, "phonePlaceholder")}
         />
         <PasswordField
           label={t(lang, "password")}

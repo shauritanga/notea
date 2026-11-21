@@ -109,11 +109,13 @@ body {
 }
 
 .app-lang button {
-  height: 1.85rem;
+  flex: 1;
+  height: 2.5rem;
   padding: 0 0.7rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 650;
   color: var(--muted);
+  text-align: center;
 }
 
 .app-lang button.is-on {

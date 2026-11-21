@@ -47,6 +47,7 @@ import {
 } from "@/domain/talent";
 import type { PlatformRoleName } from "@/domain/types";
 import { reviewVerification, submitVerification } from "@/domain/verification";
+import { sendVerificationCode } from "@/lib/messaging";
 import { clearSession, fail, getViewer, rememberCode, requireViewer, setSession } from "@/lib/viewer";
 
 async function storedFile(file: FormDataEntryValue | null) {
@@ -78,6 +79,8 @@ export async function registerAction(formData: FormData) {
     );
     await setSession(result.token);
     await rememberCode(result.codes.email ?? result.codes.phone ?? "");
+    if (result.codes.email && email) await sendVerificationCode("email", email, result.codes.email, language);
+    if (result.codes.phone && phone) await sendVerificationCode("phone", phone, result.codes.phone, language);
   } catch (error) {
     fail(back, error);
   }
@@ -113,9 +116,12 @@ export async function verifyAction(formData: FormData) {
 
 export async function recoverAction(formData: FormData) {
   try {
+    const identifier = String(formData.get("identifier") || "").trim();
+    const language = (await cookies()).get("notea_lang")?.value === "en" ? "en" : "sw";
     const db = await (await import("@/db/client")).ready();
-    const recovery = await requestRecoveryCode(db, String(formData.get("identifier") || ""));
+    const recovery = await requestRecoveryCode(db, identifier);
     await rememberCode(recovery.code);
+    await sendVerificationCode(recovery.channel, identifier, recovery.code, language);
     const jar = await cookies();
     jar.set("notea_recover_user", recovery.userId, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 600 });
   } catch (error) {
