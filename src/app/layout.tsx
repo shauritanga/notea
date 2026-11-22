@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "Football, together. Mpira, pamoja.",
   applicationName: "Notea",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Notea", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Notea", statusBarStyle: "black" },
   icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
 

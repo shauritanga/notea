@@ -8,32 +8,33 @@ export function Player({
   title,
   renditions,
   poster,
+  fill = false,
 }: {
   title: string;
   renditions: Rendition[];
   poster?: string | null;
+  fill?: boolean;
 }) {
   const [mbps, setMbps] = useState(5);
   const chosen = useMemo(() => selectRendition(renditions, mbps), [renditions, mbps]);
   if (!chosen) return null;
   return (
-    <div className="grid gap-3">
+    <div className={fill ? "app-player-fill" : "grid gap-3"}>
       <video
         key={chosen.url}
-        className="aspect-video w-full rounded-3xl bg-pitch"
+        className={fill ? undefined : "aspect-video w-full rounded-3xl bg-pitch"}
         poster={poster ?? undefined}
         controls
         src={chosen.url}
         aria-label={title}
-        {...videoPlayback}
+        autoPlay={videoPlayback.autoplay}
+        muted={videoPlayback.muted}
+        playsInline={videoPlayback.playsInline}
       />
-      <label className="grid gap-2 text-sm text-muted">
-        {chosen.quality}
-        <select className="h-12 rounded-2xl border border-line bg-fill px-4 text-ink" value={String(mbps)} onChange={(event) => setMbps(Number(event.target.value))}>
-          <option value="1">360p</option>
-          <option value="5">720p</option>
-        </select>
-      </label>
+      <select className={fill ? "app-quality" : "h-12 rounded-2xl border border-line bg-fill px-4 text-ink"} value={String(mbps)} onChange={(event) => setMbps(Number(event.target.value))} aria-label={chosen.quality}>
+        <option value="1">360p</option>
+        <option value="5">720p</option>
+      </select>
     </div>
   );
 }
