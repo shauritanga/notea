@@ -358,6 +358,38 @@ body {
   margin-top: auto;
 }
 
+.app-roles {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.app-role {
+  position: relative;
+  display: flex;
+  height: 3.6rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1.02rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-role input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-role:has(input:checked) {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--on-lime);
+}
+
 .app-choice {
   display: flex;
   height: 3.4rem;

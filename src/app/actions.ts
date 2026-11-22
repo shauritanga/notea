@@ -182,7 +182,7 @@ export async function onboardAction(formData: FormData) {
   } catch (error) {
     fail("/onboarding", error);
   }
-  redirect("/");
+  redirect("/?ready=1");
 }
 
 export async function setLanguageAction(formData: FormData) {

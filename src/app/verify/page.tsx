@@ -1,5 +1,6 @@
 export const instant = false;
 
+import { redirect } from "next/navigation";
 import { logoutAction, resendVerificationAction, verifyAction } from "@/app/actions";
 import { VerifyTimer } from "@/components/verify-timer";
 import { latestVerification } from "@/domain/accounts";
@@ -9,6 +10,7 @@ import { getViewer, readError } from "@/lib/viewer";
 
 export default async function VerifyPage({ searchParams }: PageProps<"/">) {
   const { db, user, lang, devCode } = await getViewer();
+  if (user && user.status !== "pending_verification") redirect(user.onboardedAt ? "/?ready=1" : "/onboarding");
   const issued = user ? await latestVerification(db, user.id) : null;
   const error = await readError(searchParams);
   return (

@@ -23,10 +23,10 @@ export default async function OnboardingPage({ searchParams }: PageProps<"/">) {
     <Frame>
       <Title>{t(lang, "profileAsk")}</Title>
       <Note>{error}</Note>
-      <form className="grid gap-3" action={onboardAction}>
+      <form className="app-roles" action={onboardAction}>
         {roles.map(([value, label]) => (
-          <label key={value} className="app-choice">
-            <input type="checkbox" name="profile" value={value} defaultChecked={value === "fan"} />
+          <label key={value} className="app-role">
+            <input type="radio" name="profile" value={value} required />
             <span>{t(lang, label)}</span>
           </label>
         ))}
