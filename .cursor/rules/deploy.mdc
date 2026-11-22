@@ -1,0 +1,22 @@
+---
+description: Commit, push, and redeploy every kept change
+alwaysApply: true
+---
+
+# Ship every change
+
+When a change should be kept, finish it in this order:
+
+1. Commit with a plain message. Do not add an assistant signature or Co-Authored-By trailer.
+2. Push `main` to origin.
+3. Redeploy by following `docs/DEPLOY.md`.
+4. Summarize what changed, the commit, and whether the server is online.
+
+```bash
+ssh root@139.59.139.30
+cd /var/www/notea
+git pull origin main
+npm install
+npm run build
+pm2 restart notea
+```
