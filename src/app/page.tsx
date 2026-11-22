@@ -79,22 +79,25 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
             <Link href="/discover">{t(lang, "seeAll")}</Link>
           </div>
           {featured ? (
-            <Link className="app-feature app-pitch" data-tone={tone(featured.id)} href={`/post/${featured.id}`}>
-              <span className="app-feature-badge">{labelFor(lang, featured.category)}</span>
-              <div>
-                <p>{clip(featured.body, 90)}</p>
-                <small>{featured.publisherLabel}</small>
-              </div>
-              <span className="app-watch-pill">{t(lang, "watch")}</span>
-            </Link>
+            <FeaturedCard
+              href={`/post/${featured.id}`}
+              tone={tone(featured.id)}
+              badge={labelFor(lang, featured.category)}
+              title={clip(featured.body, 72)}
+              meta={featured.publisherLabel}
+              image={featured.kind === "image" ? featured.mediaUrl : null}
+              watch={t(lang, "watch")}
+            />
           ) : clips[0] ? (
-            <Link className="app-feature app-pitch" data-tone={tone(clips[0].id)} href={`/videos/${clips[0].id}`}>
-              <span className="app-feature-badge">{t(lang, "catHighlight")}</span>
-              <div>
-                <p>{clips[0].title}</p>
-              </div>
-              <span className="app-watch-pill">{t(lang, "watch")}</span>
-            </Link>
+            <FeaturedCard
+              href={`/videos/${clips[0].id}`}
+              tone={tone(clips[0].id)}
+              badge={t(lang, "catHighlight")}
+              title={clips[0].title}
+              meta=""
+              image={clips[0].thumbnailUrl}
+              watch={t(lang, "watch")}
+            />
           ) : (
             <Quiet>{t(lang, "empty")}</Quiet>
           )}
@@ -179,6 +182,40 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
         </section>
       </div>
     </Shell>
+  );
+}
+
+function FeaturedCard({
+  href,
+  tone,
+  badge,
+  title,
+  meta,
+  image,
+  watch,
+}: {
+  href: string;
+  tone: string;
+  badge: string;
+  title: string;
+  meta: string;
+  image?: string | null;
+  watch: string;
+}) {
+  return (
+    <Link className="app-feature" href={href}>
+      <span className="app-feature-media" data-tone={tone}>
+        {image ? <img src={image} alt="" /> : null}
+        <span className="app-feature-badge">{badge}</span>
+      </span>
+      <span className="app-feature-copy">
+        <strong>{title}</strong>
+        <span className="app-feature-foot">
+          {meta ? <small>{meta}</small> : <small />}
+          <span className="app-watch-pill">{watch}</span>
+        </span>
+      </span>
+    </Link>
   );
 }
 

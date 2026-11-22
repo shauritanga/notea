@@ -1,4 +1,4 @@
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { activeContexts, profiles, sessions, users, verificationCodes } from "@/db/schema";
 import { assertAccount, audit, mustUser } from "@/domain/access";
 import { hashCode, hashPassword, hashToken, newCode, newId, newToken, normalizeEmail, normalizePhone, verifyPassword } from "@/domain/crypto";
@@ -115,13 +115,54 @@ export async function registerIndividual(
   return { user, codes, token };
 }
 
+export async function latestVerification(db: Database, userId: string) {
+  const [row] = await db
+    .select()
+    .from(verificationCodes)
+    .where(and(eq(verificationCodes.userId, userId), isNull(verificationCodes.consumedAt)))
+    .orderBy(desc(verificationCodes.createdAt))
+    .limit(1);
+  if (!row) return null;
+  return { createdAt: row.createdAt, expiresAt: row.expiresAt };
+}
+
+export async function issueVerificationCodes(db: Database, userId: string) {
+  const user = await mustUser(db, userId);
+  if (user.status !== "pending_verification") throw new AppError("already_verified", "This account is already verified");
+  const codes: Array<{ channel: "email" | "phone"; destination: string; code: string }> = [];
+  if (user.phone) codes.push({ channel: "phone", destination: user.phone, code: await issueCode(db, user.id, "phone") });
+  if (user.email) codes.push({ channel: "email", destination: user.email, code: await issueCode(db, user.id, "email") });
+  if (codes.length === 0) throw new AppError("identifier_required", "Add a phone number or an email address");
+  return { language: user.language, codes };
+}
+
+function normalizeVerificationCode(code: string) {
+  return code.match(/\d{6}/)?.[0] ?? "";
+}
+
+export async function verifySubmittedCode(db: Database, code: string) {
+  const normalized = normalizeVerificationCode(code);
+  if (!normalized) throw new AppError("invalid_code", "That code is not valid");
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(verificationCodes)
+    .where(and(isNull(verificationCodes.consumedAt), gt(verificationCodes.expiresAt, now)));
+  const match = rows.find((row) => row.codeHash === hashCode(normalized));
+  if (!match) throw new AppError("invalid_code", "That code is not valid");
+  const user = await verifyContact(db, match.userId, normalized);
+  const token = await createSession(db, user.id);
+  return { user, token };
+}
+
 export async function verifyContact(db: Database, userId: string, code: string) {
+  const normalized = normalizeVerificationCode(code);
   const now = new Date();
   const rows = await db
     .select()
     .from(verificationCodes)
     .where(and(eq(verificationCodes.userId, userId), isNull(verificationCodes.consumedAt), gt(verificationCodes.expiresAt, now)));
-  const match = rows.find((row) => row.codeHash === hashCode(code));
+  const match = normalized ? rows.find((row) => row.codeHash === hashCode(normalized)) : undefined;
   if (!match) throw new AppError("invalid_code", "That code is not valid");
   await db.update(verificationCodes).set({ consumedAt: now }).where(eq(verificationCodes.id, match.id));
   const user = await mustUser(db, userId);

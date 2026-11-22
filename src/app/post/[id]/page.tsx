@@ -1,7 +1,10 @@
 export const instant = false;
 
 import Link from "next/link";
+import { eq } from "drizzle-orm";
 import { commentAction, likeAction } from "@/app/actions";
+import { Player } from "@/components/player";
+import { videos } from "@/db/schema";
 import { authorName, getPost, listComments } from "@/domain/social";
 import { t } from "@/i18n/messages";
 import { requireViewer } from "@/lib/viewer";
@@ -18,12 +21,22 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
     name: await authorName(db, comment.userId).catch(() => ""),
   })));
   const tone = String([...post.id].reduce((total, char) => total + char.charCodeAt(0), 0) % 4);
+  const [clip] = post.videoId ? await db.select().from(videos).where(eq(videos.id, post.videoId)) : [];
+  const picture = post.mediaUrl && !/\.(mp4|webm|mov|m4v)(\?|$)/i.test(post.mediaUrl);
   return (
     <div className="app-stage">
       <div className="app-screen app-screen-watch">
         <div className="app-watch">
           <div className="app-watch-visual">
-            {post.mediaUrl ? <img src={post.mediaUrl} alt="" /> : <div className="app-pitch" data-tone={tone} />}
+            {clip?.renditions?.length ? (
+              <Player title={clip.title} renditions={clip.renditions} poster={clip.thumbnailUrl} fill />
+            ) : picture ? (
+              <img src={post.mediaUrl ?? ""} alt="" />
+            ) : post.mediaUrl ? (
+              <video src={post.mediaUrl} controls playsInline />
+            ) : (
+              <div className="app-pitch" data-tone={tone} />
+            )}
             <Link className="app-watch-x" href="/" aria-label="Close">×</Link>
             <div className="app-watch-copy">
               <strong>{post.publisherLabel}</strong>

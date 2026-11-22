@@ -1,4 +1,4 @@
-const cacheName = "notea-shell-v1";
+const cacheName = "notea-shell-v2";
 const shell = ["/", "/welcome", "/manifest.webmanifest", "/icon-192.png"];
 
 self.addEventListener("install", (event) => {
@@ -6,7 +6,12 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== cacheName).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim()),
+  );
 });
 
 self.addEventListener("fetch", (event) => {
@@ -18,6 +23,14 @@ self.addEventListener("fetch", (event) => {
         caches.open(cacheName).then((cache) => cache.put(event.request, copy)).catch(() => undefined);
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/welcome"))),
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        const path = new URL(event.request.url).pathname;
+        if (path === "/verify" || path === "/onboarding" || path === "/login") {
+          return new Response("", { status: 503 });
+        }
+        return (await caches.match("/welcome")) || new Response("", { status: 503 });
+      }),
   );
 });

@@ -11,6 +11,7 @@ import {
   addProfile,
   completeOnboarding,
   deactivateAccount,
+  issueVerificationCodes,
   login,
   recoverAccount,
   registerIndividual,
@@ -19,7 +20,7 @@ import {
   setActiveContext,
   updateAccountSettings,
   updateProfile,
-  verifyContact,
+  verifySubmittedCode,
 } from "@/domain/accounts";
 import {
   anonymizeUser,
@@ -45,10 +46,18 @@ import {
   publishAnnouncement,
   updateApplicationStatus,
 } from "@/domain/talent";
+import { AppError } from "@/domain/errors";
 import type { PlatformRoleName } from "@/domain/types";
 import { reviewVerification, submitVerification } from "@/domain/verification";
 import { sendVerificationCode } from "@/lib/messaging";
 import { clearSession, fail, getViewer, rememberCode, requireViewer, setSession } from "@/lib/viewer";
+
+async function deliverVerification(db: Awaited<ReturnType<typeof import("@/db/client").ready>>, userId: string, language: "sw" | "en") {
+  const issued = await issueVerificationCodes(db, userId);
+  await rememberCode(issued.codes[0]?.code ?? "");
+  for (const item of issued.codes) await sendVerificationCode(item.channel, item.destination, item.code, language);
+  return issued.codes[0]?.code ?? "";
+}
 
 async function storedFile(file: FormDataEntryValue | null) {
   if (!(file instanceof File) || file.size === 0) return "";
@@ -95,23 +104,39 @@ export async function loginAction(formData: FormData) {
       password: String(formData.get("password") || ""),
     });
     await setSession(result.token);
+    if (result.user.status === "pending_verification") {
+      await deliverVerification(db, result.user.id, result.user.language === "en" ? "en" : "sw");
+    }
   } catch (error) {
     fail("/login", error);
   }
   redirect("/");
 }
 
-export async function verifyAction(formData: FormData) {
+export async function resendVerificationAction() {
   try {
     const { db, user } = await (await import("@/lib/viewer")).getViewer();
-    if (!user) fail("/login", new Error("Sign in first"));
-    await verifyContact(db, user!.id, String(formData.get("code") || ""));
-    const jar = await cookies();
-    jar.delete("notea_dev_code");
+    if (!user) throw new AppError("sign_in_required", "Sign in again to request a new code");
+    await deliverVerification(db, user.id, user.language === "en" ? "en" : "sw");
   } catch (error) {
     fail("/verify", error);
   }
-  redirect("/onboarding");
+  redirect("/verify");
+}
+
+export async function verifyAction(formData: FormData) {
+  let next = "/onboarding";
+  try {
+    const db = await (await import("@/db/client")).ready();
+    const result = await verifySubmittedCode(db, String(formData.get("code") || ""));
+    await setSession(result.token);
+    const jar = await cookies();
+    jar.delete("notea_dev_code");
+    next = result.user.onboardedAt ? "/" : "/onboarding";
+  } catch (error) {
+    fail("/verify", error);
+  }
+  redirect(next);
 }
 
 export async function recoverAction(formData: FormData) {
@@ -182,17 +207,41 @@ export async function logoutAction() {
   redirect("/welcome");
 }
 
+async function saveThumbnail(video: { id: string; svg?: string }) {
+  if (!video.svg) return;
+  const dir = path.join(process.cwd(), "public", "uploads", "thumbs");
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, `${video.id}.svg`), video.svg);
+}
+
 export async function publishAction(formData: FormData) {
   try {
     const { db, user } = await requireViewer();
-    const upload = await storedFile(formData.get("file"));
-    const kind = String(formData.get("kind") || "text") as "text" | "image" | "video";
+    const file = formData.get("file");
+    const upload = await storedFile(file);
+    const mime = file instanceof File ? file.type : "";
+    const filename = file instanceof File ? file.name.toLowerCase() : "";
+    const videoFile = mime.startsWith("video/") || /\.(mp4|webm|mov|m4v)$/.test(filename);
+    const imageFile = mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|avif)$/.test(filename);
+    let kind = String(formData.get("kind") || "text") as "text" | "image" | "video";
+    let videoId = String(formData.get("videoId") || "") || undefined;
+    if (upload && (kind === "video" || videoFile)) {
+      kind = "video";
+      const created = await uploadVideo(db, user.id, {
+        title: (String(formData.get("body") || "") || (file instanceof File ? file.name : "Video")).slice(0, 80),
+        sourceUrl: upload,
+      });
+      await saveThumbnail(created);
+      videoId = created.id;
+    } else if (upload && (kind === "image" || imageFile)) {
+      kind = "image";
+    }
     await publishPost(db, user.id, {
       kind,
       category: String(formData.get("category") || "general"),
       body: String(formData.get("body") || ""),
       mediaUrl: upload || String(formData.get("mediaUrl") || "") || undefined,
-      videoId: String(formData.get("videoId") || "") || undefined,
+      videoId,
       region: String(formData.get("region") || "") || undefined,
     });
   } catch (error) {
@@ -525,12 +574,7 @@ export async function videoAction(formData: FormData) {
       sourceUrl,
       profileId: String(formData.get("profileId") || "") || undefined,
     });
-    const svg = "svg" in video && typeof video.svg === "string" ? video.svg : "";
-    if (svg) {
-      const dir = path.join(process.cwd(), "public", "uploads", "thumbs");
-      await mkdir(dir, { recursive: true });
-      await writeFile(path.join(dir, `${video.id}.svg`), svg);
-    }
+    await saveThumbnail(video);
     id = video.id;
   } catch (error) {
     fail("/videos/new", error);
