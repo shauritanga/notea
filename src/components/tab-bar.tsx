@@ -7,7 +7,7 @@ import { t, type CopyKey, type Lang } from "@/i18n/messages";
 const items: Array<{ key: CopyKey; href: string; icon: IconName; center?: boolean }> = [
   { key: "home", href: "/", icon: "home" },
   { key: "find", href: "/discover", icon: "calendar" },
-  { key: "post", href: "/compose", icon: "video", center: true },
+  { key: "post", href: "/compose", icon: "plus", center: true },
   { key: "alerts", href: "/notifications", icon: "grid" },
   { key: "you", href: "/you", icon: "person" },
 ];
@@ -35,7 +35,7 @@ export function TabBar({ lang }: { lang: Lang }) {
   );
 }
 
-type IconName = "home" | "calendar" | "video" | "grid" | "person";
+type IconName = "home" | "calendar" | "plus" | "grid" | "person";
 
 function Icon({ name }: { name: IconName }) {
   const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
@@ -54,11 +54,10 @@ function Icon({ name }: { name: IconName }) {
       </svg>
     );
   }
-  if (name === "video") {
+  if (name === "plus") {
     return (
-      <svg {...common} fill="currentColor" stroke="none">
-        <path d="M8 7.5h6.2a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 15V9A1.5 1.5 0 0 1 8 7.5z" />
-        <path d="m16 10.2 3.2-1.8v7.2L16 13.8z" />
+      <svg {...common} strokeWidth={2.4}>
+        <path d="M12 6v12M6 12h12" />
       </svg>
     );
   }
