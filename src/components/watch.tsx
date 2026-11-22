@@ -55,14 +55,15 @@ export function WatchPost({
 
   async function share() {
     const url = `${window.location.origin}${back}`;
+    const nativeShare = (navigator as unknown as { share?: (data: ShareData) => Promise<void> }).share;
     try {
-      if (navigator.share) await navigator.share({ title: account.name, text: caption, url });
+      if (nativeShare) await nativeShare({ title: account.name, text: caption, url });
       else await navigator.clipboard.writeText(url);
       setNote(labels.copied);
       shareRef.current?.requestSubmit();
-    } catch {
-      if (navigator.share) return;
-      setNote(url);
+    } catch (error) {
+      if (nativeShare && error instanceof DOMException && error.name === "AbortError") return;
+      setNote(labels.copied);
       shareRef.current?.requestSubmit();
     }
   }
@@ -154,6 +155,7 @@ function CountForm({
   label,
   count,
   on,
+  tone,
   children,
 }: {
   action: Action;
