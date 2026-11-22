@@ -10,7 +10,7 @@ When a change should be kept, finish it in this order:
 1. Commit with a plain message. Do not add an assistant signature or Co-Authored-By trailer.
 2. Push `main` to origin.
 3. Redeploy by following `docs/DEPLOY.md`.
-4. Summarize what changed, the commit, and whether the server is online.
+4. Summarize what changed, the commit, and whether https://notea.zanua.co.tz is online.
 
 ```bash
 ssh root@139.59.139.30
