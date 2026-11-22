@@ -55,7 +55,7 @@ import { clearSession, fail, getViewer, rememberCode, requireViewer, setSession 
 async function deliverVerification(db: Awaited<ReturnType<typeof import("@/db/client").ready>>, userId: string, language: "sw" | "en") {
   const issued = await issueVerificationCodes(db, userId);
   await rememberCode(issued.codes[0]?.code ?? "");
-  for (const item of issued.codes) await sendVerificationCode(item.channel, item.destination, item.code, language);
+  for (const item of issued.codes) await sendVerificationCode(item.channel, item.destination, item.code, language, issued.name);
   return issued.codes[0]?.code ?? "";
 }
 
@@ -88,8 +88,8 @@ export async function registerAction(formData: FormData) {
     );
     await setSession(result.token);
     await rememberCode(result.codes.email ?? result.codes.phone ?? "");
-    if (result.codes.email && email) await sendVerificationCode("email", email, result.codes.email, language);
-    if (result.codes.phone && phone) await sendVerificationCode("phone", phone, result.codes.phone, language);
+    if (result.codes.email && email) await sendVerificationCode("email", email, result.codes.email, language, result.user.name);
+    if (result.codes.phone && phone) await sendVerificationCode("phone", phone, result.codes.phone, language, result.user.name);
   } catch (error) {
     fail(back, error);
   }
@@ -146,7 +146,7 @@ export async function recoverAction(formData: FormData) {
     const db = await (await import("@/db/client")).ready();
     const recovery = await requestRecoveryCode(db, identifier);
     await rememberCode(recovery.code);
-    await sendVerificationCode(recovery.channel, identifier, recovery.code, language);
+    await sendVerificationCode(recovery.channel, identifier, recovery.code, language, recovery.name);
     const jar = await cookies();
     jar.set("notea_recover_user", recovery.userId, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 600 });
   } catch (error) {

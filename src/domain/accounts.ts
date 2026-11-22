@@ -133,7 +133,7 @@ export async function issueVerificationCodes(db: Database, userId: string) {
   if (user.phone) codes.push({ channel: "phone", destination: user.phone, code: await issueCode(db, user.id, "phone") });
   if (user.email) codes.push({ channel: "email", destination: user.email, code: await issueCode(db, user.id, "email") });
   if (codes.length === 0) throw new AppError("identifier_required", "Add a phone number or an email address");
-  return { language: user.language, codes };
+  return { language: user.language, name: user.name, codes };
 }
 
 function normalizeVerificationCode(code: string) {
@@ -223,7 +223,7 @@ export async function requestRecoveryCode(db: Database, identifier: string) {
   if (user.status !== "deactivated") throw new AppError("not_deactivated", "This account is still open");
   const channel: "email" | "phone" = email ? "email" : "phone";
   const code = await issueCode(db, user.id, channel);
-  return { userId: user.id, code, channel };
+  return { userId: user.id, name: user.name, code, channel };
 }
 
 export async function recoverAccount(db: Database, userId: string, code: string) {

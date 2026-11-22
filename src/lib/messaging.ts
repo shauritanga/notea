@@ -6,7 +6,41 @@ function toBeemMsisdn(phone: string) {
   return `255${digits}`;
 }
 
-async function sendVerificationEmail(to: string, code: string, lang: "sw" | "en") {
+function escapeHtml(value: string) {
+  const chars: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  return value.replace(/[&<>"']/g, (char) => chars[char] ?? char);
+}
+
+function firstName(name: string) {
+  return name.trim().split(/\s+/)[0] || "";
+}
+
+function verificationLetter(code: string, lang: "sw" | "en", name: string) {
+  const person = firstName(name);
+  const hello = lang === "en" ? `Hello${person ? ` ${person}` : ""},` : `Hujambo${person ? ` ${person}` : ""},`;
+  const lead = lang === "en" ? "Your verification code is:" : "Namba yako ya uthibitisho ni:";
+  const expiry = lang === "en" ? "This code expires in 10 minutes." : "Namba hii itaisha baada ya dakika 10.";
+  const warning =
+    lang === "en"
+      ? "If you did not attempt to sign in, please change your password immediately."
+      : "Kama hukujaribu kuingia, tafadhali badilisha nenosiri lako mara moja.";
+  const site = "https://notea.zanua.co.tz";
+  const text = [hello, "", lead, "", code, "", expiry, "", warning, "", "---", "NOTEA", site, "", "Copyright © Notea"].join("\n");
+  const html = `<div style="font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;max-width:560px;line-height:1.5;">
+<p style="margin:0 0 16px;">${escapeHtml(hello)}</p>
+<p style="margin:0 0 8px;">${escapeHtml(lead)}</p>
+<p style="margin:16px 0 20px;font-size:32px;letter-spacing:6px;font-weight:700;">${escapeHtml(code)}</p>
+<p style="margin:0 0 16px;">${escapeHtml(expiry)}</p>
+<p style="margin:0 0 24px;">${escapeHtml(warning)}</p>
+<hr style="border:none;border-top:1px solid #ddd;margin:0 0 16px;">
+<p style="margin:0 0 8px;font-weight:700;letter-spacing:0.08em;">NOTEA</p>
+<p style="margin:0 0 16px;"><a href="${site}" style="color:#1a1a1a;">${lang === "en" ? "visit our website" : "tembelea tovuti"}</a> &nbsp;|&nbsp; <a href="${site}/login" style="color:#1a1a1a;">${lang === "en" ? "log in" : "ingia"}</a></p>
+<p style="margin:0;color:#666;font-size:12px;">Copyright © Notea</p>
+</div>`;
+  return { text, html };
+}
+
+async function sendVerificationEmail(to: string, code: string, lang: "sw" | "en", name: string) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   if (!apiKey || !from) {
@@ -14,14 +48,11 @@ async function sendVerificationEmail(to: string, code: string, lang: "sw" | "en"
     return;
   }
   const subject = lang === "en" ? "Your Notea verification code" : "Namba yako ya uthibitisho ya Notea";
-  const text =
-    lang === "en"
-      ? `Your verification code is ${code}. It expires in 10 minutes.`
-      : `Namba yako ya uthibitisho ni ${code}. Itaisha baada ya dakika 10.`;
+  const letter = verificationLetter(code, lang, name);
   const res = await fetch(RESEND_API, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to: [to], subject, text }),
+    body: JSON.stringify({ from, to: [to], subject, text: letter.text, html: letter.html }),
   });
   if (!res.ok) {
     console.error("[notea] Resend send failed", res.status, await res.text().catch(() => ""));
@@ -55,9 +86,9 @@ async function sendVerificationSms(to: string, code: string, lang: "sw" | "en") 
   }
 }
 
-export async function sendVerificationCode(channel: "email" | "phone", to: string, code: string, lang: "sw" | "en" = "sw") {
+export async function sendVerificationCode(channel: "email" | "phone", to: string, code: string, lang: "sw" | "en" = "sw", name = "") {
   try {
-    if (channel === "email") await sendVerificationEmail(to, code, lang);
+    if (channel === "email") await sendVerificationEmail(to, code, lang, name);
     else await sendVerificationSms(to, code, lang);
   } catch (error) {
     console.error("[notea] sendVerificationCode failed", channel, error);
