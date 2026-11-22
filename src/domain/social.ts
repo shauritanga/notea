@@ -118,7 +118,12 @@ async function mustPublished(db: Database, postId: string) {
 export async function likePost(db: Database, actorId: string, postId: string) {
   await assertAccount(db, actorId, "write");
   const post = await mustPublished(db, postId);
-  await db.insert(postLikes).values({ postId, userId: actorId }).onConflictDoNothing();
+  const [existing] = await db.select().from(postLikes).where(and(eq(postLikes.postId, postId), eq(postLikes.userId, actorId)));
+  if (existing) {
+    await db.delete(postLikes).where(and(eq(postLikes.postId, postId), eq(postLikes.userId, actorId)));
+    return;
+  }
+  await db.insert(postLikes).values({ postId, userId: actorId });
   if (post.authorUserId !== actorId) {
     await notify(db, { userId: post.authorUserId, type: "social", title: "New like", body: `${post.publisherLabel} received a like.` });
   }
@@ -139,7 +144,12 @@ export async function commentOnPost(db: Database, actorId: string, postId: strin
 export async function savePost(db: Database, actorId: string, postId: string) {
   await assertAccount(db, actorId, "write");
   await mustPublished(db, postId);
-  await db.insert(postSaves).values({ postId, userId: actorId }).onConflictDoNothing();
+  const [existing] = await db.select().from(postSaves).where(and(eq(postSaves.postId, postId), eq(postSaves.userId, actorId)));
+  if (existing) {
+    await db.delete(postSaves).where(and(eq(postSaves.postId, postId), eq(postSaves.userId, actorId)));
+    return;
+  }
+  await db.insert(postSaves).values({ postId, userId: actorId });
 }
 
 export async function sharePost(db: Database, actorId: string, postId: string) {
@@ -162,6 +172,43 @@ export async function followTarget(db: Database, actorId: string, targetType: "p
     .insert(follows)
     .values({ id: newId(), followerUserId: actorId, targetType, targetId, createdAt: new Date() })
     .onConflictDoNothing();
+}
+
+export async function toggleFollow(db: Database, actorId: string, targetType: "profile" | "organization" | "business", targetId: string) {
+  await assertAccount(db, actorId, "write");
+  const [existing] = await db
+    .select()
+    .from(follows)
+    .where(and(eq(follows.followerUserId, actorId), eq(follows.targetType, targetType), eq(follows.targetId, targetId)));
+  if (existing) {
+    await db.delete(follows).where(eq(follows.id, existing.id));
+    return;
+  }
+  await followTarget(db, actorId, targetType, targetId);
+}
+
+export async function watchState(db: Database, actorId: string, postId: string, target: { type: string; id: string } | null) {
+  const likeRows = await db.select().from(postLikes).where(eq(postLikes.postId, postId));
+  const commentRows = await db.select().from(comments).where(eq(comments.postId, postId));
+  const saveRows = await db.select().from(postSaves).where(eq(postSaves.postId, postId));
+  const shareRows = await db.select().from(shares).where(eq(shares.postId, postId));
+  const following = target
+    ? (
+        await db
+          .select()
+          .from(follows)
+          .where(and(eq(follows.followerUserId, actorId), eq(follows.targetType, target.type), eq(follows.targetId, target.id)))
+      ).length > 0
+    : false;
+  return {
+    likes: likeRows.length,
+    liked: likeRows.some((row) => row.userId === actorId),
+    comments: commentRows.length,
+    saves: saveRows.length,
+    saved: saveRows.some((row) => row.userId === actorId),
+    shares: shareRows.length,
+    following,
+  };
 }
 
 export async function getFeed(db: Database, actorId: string, mode: FeedMode, now = new Date()) {

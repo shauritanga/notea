@@ -32,7 +32,7 @@ import { createBusinessCampaign, createKairukiCampaign, markCampaignPaid, record
 import { authorizePlayerYouTube, publishToYouTube, retryYouTube, uploadVideo } from "@/domain/media";
 import { markNotificationsRead } from "@/domain/notify";
 import { assignOrganizationRole, registerOrganization, revokeOrganizationRole } from "@/domain/organizations";
-import { commentOnPost, followTarget, likePost, reportPost, savePost, sharePost } from "@/domain/social";
+import { commentOnPost, likePost, reportPost, savePost, sharePost, toggleFollow } from "@/domain/social";
 import {
   addHighlight,
   addToShortlist,
@@ -251,7 +251,11 @@ export async function followAction(formData: FormData) {
   const back = String(formData.get("back") || "/discover");
   try {
     const { db, user } = await requireViewer();
-    await followTarget(db, user.id, String(formData.get("targetType")) as "profile" | "organization" | "business", String(formData.get("targetId")));
+    const targetType = String(formData.get("targetType"));
+    if (targetType !== "profile" && targetType !== "organization" && targetType !== "business") {
+      throw new AppError("invalid_target", "Choose an account to follow");
+    }
+    await toggleFollow(db, user.id, targetType, String(formData.get("targetId")));
   } catch (error) {
     fail(back, error);
   }

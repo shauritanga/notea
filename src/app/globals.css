@@ -1279,6 +1279,268 @@ body {
   background: #070b08;
 }
 
+.app-tiktok {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  color: white;
+}
+
+.app-tiktok-media,
+.app-tiktok-media video,
+.app-tiktok-media img,
+.app-tiktok-media .app-pitch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.app-tiktok-media .app-pitch {
+  display: grid;
+  place-items: center;
+  padding: 2.5rem 4.5rem 6rem 1.2rem;
+}
+
+.app-tiktok-media .app-pitch p {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.app-tiktok-pause {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.app-tiktok-back {
+  position: absolute;
+  top: calc(0.7rem + env(safe-area-inset-top));
+  left: 0.7rem;
+  z-index: 4;
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: white;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.app-tiktok-rail {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 1.3rem;
+  z-index: 4;
+  display: grid;
+  gap: 0.85rem;
+  justify-items: center;
+}
+
+.app-tiktok-rail form,
+.app-tiktok-rail > button {
+  display: grid;
+  justify-items: center;
+}
+
+.app-tiktok-rail button {
+  display: grid;
+  justify-items: center;
+  gap: 0.12rem;
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.app-tiktok-rail svg {
+  width: 1.9rem;
+  height: 1.9rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+.app-tiktok-rail button.is-on {
+  color: #ff2d55;
+}
+
+.app-tiktok-rail button.is-saved {
+  color: var(--lime);
+}
+
+.app-tiktok-rail button.is-on:nth-child(n) svg {
+  color: inherit;
+}
+
+.app-tiktok-face {
+  position: relative;
+  margin-bottom: 0.35rem;
+}
+
+.app-tiktok-face a {
+  display: grid;
+  width: 2.85rem;
+  height: 2.85rem;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid white;
+  border-radius: 999px;
+  background: #1a7a38;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.app-tiktok-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-tiktok-face form {
+  position: absolute;
+  bottom: -0.45rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.app-tiktok-face button {
+  width: 1.2rem;
+  height: 1.2rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--lime);
+  color: #142018;
+  font-size: 0.85rem;
+  line-height: 1;
+  text-shadow: none;
+}
+
+.app-tiktok-copy {
+  position: absolute;
+  right: 4.8rem;
+  bottom: 1.15rem;
+  left: 0.85rem;
+  z-index: 4;
+  display: grid;
+  gap: 0.25rem;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+.app-tiktok-copy a {
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.app-tiktok-copy p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.app-tiktok-copy small {
+  color: var(--lime);
+  font-size: 0.75rem;
+}
+
+.app-tiktok-sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 6;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 62%;
+  border-radius: 1.1rem 1.1rem 0 0;
+  background: #171c18;
+  color: var(--ink);
+  padding: 0.75rem 0.85rem calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+.app-tiktok-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-tiktok-sheet-head button {
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.app-tiktok-thread {
+  display: grid;
+  align-content: start;
+  gap: 0.7rem;
+  overflow: auto;
+  margin: 0.7rem 0;
+}
+
+.app-tiktok-thread p {
+  display: flex;
+  gap: 0.55rem;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.app-tiktok-thread b {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: none;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--lime);
+  color: #142018;
+  font-size: 0.62rem;
+}
+
+.app-tiktok-thread strong {
+  margin-right: 0.3rem;
+}
+
+.app-tiktok-sheet form {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.app-tiktok-sheet input {
+  min-width: 0;
+  flex: 1;
+  height: 2.6rem;
+  border-radius: 999px;
+}
+
+.app-tiktok-sheet form button {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--lime);
+  color: #142018;
+}
+
 .app-watch {
   position: relative;
   height: 100%;
