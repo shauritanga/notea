@@ -760,6 +760,158 @@ body {
   padding-bottom: 0.5rem;
 }
 
+.app-ig {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.app-ig-top {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.app-ig-avatar {
+  display: grid;
+  width: 5.5rem;
+  height: 5.5rem;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(214, 255, 74, 0.9), transparent 42%),
+    linear-gradient(160deg, #2f7a45, #0c3a24);
+  color: white;
+  font-size: 1.35rem;
+  font-weight: 750;
+}
+
+.app-ig-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-ig-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+}
+
+.app-ig-stats p {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.app-ig-stats strong {
+  font-size: 1.15rem;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.app-ig-stats span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.app-ig-copy {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.app-ig-copy strong {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.98rem;
+}
+
+.app-ig-copy strong i {
+  display: grid;
+  width: 0.95rem;
+  height: 0.95rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #4aa3ff;
+  color: white;
+  font-size: 0.62rem;
+  font-style: normal;
+}
+
+.app-ig-meta {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.app-ig-bio {
+  font-size: 0.88rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+.app-ig-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.app-ig-actions a {
+  display: grid;
+  height: 2.05rem;
+  place-items: center;
+  border-radius: 0.55rem;
+  background: var(--fill);
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.app-ig-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-right: -1rem;
+  margin-left: -1rem;
+}
+
+.app-ig-grid a {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #142018;
+}
+
+.app-ig-grid img,
+.app-ig-tile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-ig-tile {
+  display: grid;
+  place-items: end start;
+  padding: 0.4rem;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.12), transparent 46%),
+    repeating-linear-gradient(90deg, #1a7a38 0 16%, #146830 16% 32%);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.app-ig-play {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.35rem;
+  color: white;
+  font-size: 0.72rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
 .app-cal-head,
 .app-block-head {
   display: flex;
