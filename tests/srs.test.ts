@@ -16,7 +16,9 @@ import {
   recoverAccount,
   registerIndividual,
   requestDeletion,
+  requestPasswordReset,
   requestRecoveryCode,
+  resetPasswordWithCode,
   setActiveContext,
   updateAccountSettings,
   updateProfile,
@@ -334,6 +336,20 @@ describe("SRS acceptance", () => {
     const erased = await getAdminUser(db, admin.user.id, member.user.id);
     expect(erased.name).toBe("Removed member");
     expect(erased.email).toBeNull();
+  });
+
+  it("resets a forgotten password with a code and signs the person in", async () => {
+    const member = await verifiedPerson(db, { name: "Asha Reset" });
+    await onboard(member.user.id, ["fan"]);
+    const reset = await requestPasswordReset(db, member.email);
+    expect(reset.code).toMatch(/^\d{6}$/);
+    const next = await resetPasswordWithCode(db, reset.code, "fresh-pass-8");
+    expect(next.user.id).toBe(member.user.id);
+    expect(await userFromToken(db, next.token)).toMatchObject({ id: member.user.id });
+    await expect(login(db, { identifier: member.email, password: member.password })).rejects.toMatchObject({ code: "invalid_login" });
+    const signed = await login(db, { identifier: member.email, password: "fresh-pass-8" });
+    expect(signed.user.id).toBe(member.user.id);
+    await expect(resetPasswordWithCode(db, reset.code, "another-pass-8")).rejects.toMatchObject({ code: "invalid_code" });
   });
 
   it("hides contact details and protects minors", async () => {

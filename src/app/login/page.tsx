@@ -33,6 +33,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/">) {
             {t(lang, "register")}
           </Link>
         </p>
+        <Link className="app-link-quiet" href="/reset">
+          {t(lang, "forgotPassword")}
+        </Link>
         <Link className="app-link-quiet" href="/recover">
           {t(lang, "needHelp")} {t(lang, "recoverClosed")}
         </Link>

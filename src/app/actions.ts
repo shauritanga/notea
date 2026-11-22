@@ -14,7 +14,9 @@ import {
   recoverAccount,
   registerIndividual,
   requestDeletion,
+  requestPasswordReset,
   requestRecoveryCode,
+  resetPasswordWithCode,
   setActiveContext,
   updateAccountSettings,
   updateProfile,
@@ -124,6 +126,39 @@ export async function verifyAction(formData: FormData) {
     next = result.user.onboardedAt ? "/" : "/onboarding";
   } catch (error) {
     fail("/verify", error);
+  }
+  redirect(next);
+}
+
+export async function resetRequestAction(formData: FormData) {
+  try {
+    const identifier = String(formData.get("identifier") || "").trim();
+    const language = (await cookies()).get("notea_lang")?.value === "en" ? "en" : "sw";
+    const db = await (await import("@/db/client")).ready();
+    const reset = await requestPasswordReset(db, identifier);
+    await rememberCode(reset.code);
+    const channel = reset.channel === "password_email" ? "email" : "phone";
+    await sendVerificationCode(channel, reset.destination, reset.code, language, reset.name, "reset");
+  } catch (error) {
+    fail("/reset", error);
+  }
+  redirect("/reset?sent=1");
+}
+
+export async function resetFinishAction(formData: FormData) {
+  let next = "/";
+  try {
+    const password = String(formData.get("password") || "");
+    const confirm = String(formData.get("confirm") || "");
+    if (password !== confirm) throw new AppError("password_mismatch", "Those passwords do not match");
+    const db = await (await import("@/db/client")).ready();
+    const result = await resetPasswordWithCode(db, String(formData.get("code") || ""), password);
+    await setSession(result.token);
+    const jar = await cookies();
+    jar.delete("notea_dev_code");
+    next = result.user.onboardedAt ? "/" : "/onboarding";
+  } catch (error) {
+    fail("/reset", error);
   }
   redirect(next);
 }

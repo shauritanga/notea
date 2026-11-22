@@ -15,15 +15,26 @@ function firstName(name: string) {
   return name.trim().split(/\s+/)[0] || "";
 }
 
-function verificationLetter(code: string, lang: "sw" | "en", name: string) {
+function verificationLetter(code: string, lang: "sw" | "en", name: string, purpose: "verify" | "reset" = "verify") {
   const person = firstName(name);
   const hello = lang === "en" ? `Hello${person ? ` ${person}` : ""},` : `Hujambo${person ? ` ${person}` : ""},`;
-  const lead = lang === "en" ? "Your verification code is:" : "Namba yako ya uthibitisho ni:";
+  const lead =
+    purpose === "reset"
+      ? lang === "en"
+        ? "Your password reset code is:"
+        : "Namba yako ya kubadili nenosiri ni:"
+      : lang === "en"
+        ? "Your verification code is:"
+        : "Namba yako ya uthibitisho ni:";
   const expiry = lang === "en" ? "This code expires in 10 minutes." : "Namba hii itaisha baada ya dakika 10.";
   const warning =
-    lang === "en"
-      ? "If you did not attempt to sign in, please change your password immediately."
-      : "Kama hukujaribu kuingia, tafadhali badilisha nenosiri lako mara moja.";
+    purpose === "reset"
+      ? lang === "en"
+        ? "If you did not ask to reset your password, you can ignore this email."
+        : "Kama hukuomba kubadili nenosiri, puuza barua hii."
+      : lang === "en"
+        ? "If you did not attempt to sign in, please change your password immediately."
+        : "Kama hukujaribu kuingia, tafadhali badilisha nenosiri lako mara moja.";
   const site = "https://notea.zanua.co.tz";
   const text = [hello, "", lead, "", code, "", expiry, "", warning, "", "---", "NOTEA", site, "", "Copyright © Notea"].join("\n");
   const html = `<div style="font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;max-width:560px;line-height:1.5;">
@@ -40,15 +51,22 @@ function verificationLetter(code: string, lang: "sw" | "en", name: string) {
   return { text, html };
 }
 
-async function sendVerificationEmail(to: string, code: string, lang: "sw" | "en", name: string) {
+async function sendVerificationEmail(to: string, code: string, lang: "sw" | "en", name: string, purpose: "verify" | "reset" = "verify") {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   if (!apiKey || !from) {
     console.warn("[notea] RESEND_API_KEY/EMAIL_FROM not set; skipping email send to", to);
     return;
   }
-  const subject = lang === "en" ? "Your Notea verification code" : "Namba yako ya uthibitisho ya Notea";
-  const letter = verificationLetter(code, lang, name);
+  const subject =
+    purpose === "reset"
+      ? lang === "en"
+        ? "Reset your Notea password"
+        : "Badili nenosiri lako la Notea"
+      : lang === "en"
+        ? "Your Notea verification code"
+        : "Namba yako ya uthibitisho ya Notea";
+  const letter = verificationLetter(code, lang, name, purpose);
   const res = await fetch(RESEND_API, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -59,7 +77,7 @@ async function sendVerificationEmail(to: string, code: string, lang: "sw" | "en"
   }
 }
 
-async function sendVerificationSms(to: string, code: string, lang: "sw" | "en") {
+async function sendVerificationSms(to: string, code: string, lang: "sw" | "en", purpose: "verify" | "reset" = "verify") {
   const apiKey = process.env.BEEM_API_KEY;
   const secretKey = process.env.BEEM_SECRET_KEY;
   const senderId = process.env.SMS_SENDER_ID ?? process.env.BEEM_SOURCE_ADDR ?? "INFO";
@@ -67,7 +85,14 @@ async function sendVerificationSms(to: string, code: string, lang: "sw" | "en") 
     console.warn("[notea] BEEM_API_KEY/BEEM_SECRET_KEY not set; skipping SMS send to", to);
     return;
   }
-  const message = lang === "en" ? `Your Notea verification code is ${code}.` : `Namba yako ya uthibitisho ya Notea ni ${code}.`;
+  const message =
+    purpose === "reset"
+      ? lang === "en"
+        ? `Your Notea password reset code is ${code}.`
+        : `Namba ya kubadili nenosiri la Notea ni ${code}.`
+      : lang === "en"
+        ? `Your Notea verification code is ${code}.`
+        : `Namba yako ya uthibitisho ya Notea ni ${code}.`;
   const credentials = Buffer.from(`${apiKey}:${secretKey}`).toString("base64");
   const res = await fetch(BEEM_API, {
     method: "POST",
@@ -86,10 +111,17 @@ async function sendVerificationSms(to: string, code: string, lang: "sw" | "en") 
   }
 }
 
-export async function sendVerificationCode(channel: "email" | "phone", to: string, code: string, lang: "sw" | "en" = "sw", name = "") {
+export async function sendVerificationCode(
+  channel: "email" | "phone",
+  to: string,
+  code: string,
+  lang: "sw" | "en" = "sw",
+  name = "",
+  purpose: "verify" | "reset" = "verify",
+) {
   try {
-    if (channel === "email") await sendVerificationEmail(to, code, lang, name);
-    else await sendVerificationSms(to, code, lang);
+    if (channel === "email") await sendVerificationEmail(to, code, lang, name, purpose);
+    else await sendVerificationSms(to, code, lang, purpose);
   } catch (error) {
     console.error("[notea] sendVerificationCode failed", channel, error);
   }

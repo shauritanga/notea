@@ -32,7 +32,7 @@ function assertName(name: string) {
   return clean;
 }
 
-async function issueCode(db: Database, userId: string, channel: "email" | "phone") {
+async function issueCode(db: Database, userId: string, channel: "email" | "phone" | "password_email" | "password_phone") {
   const code = newCode();
   await db.insert(verificationCodes).values({
     id: newId(),
@@ -148,7 +148,7 @@ export async function verifySubmittedCode(db: Database, code: string) {
     .select()
     .from(verificationCodes)
     .where(and(isNull(verificationCodes.consumedAt), gt(verificationCodes.expiresAt, now)));
-  const match = rows.find((row) => row.codeHash === hashCode(normalized));
+  const match = rows.find((row) => row.codeHash === hashCode(normalized) && row.channel !== "password_email" && row.channel !== "password_phone");
   if (!match) throw new AppError("invalid_code", "That code is not valid");
   const user = await verifyContact(db, match.userId, normalized);
   const token = await createSession(db, user.id);
@@ -211,6 +211,53 @@ export async function changePassword(db: Database, userId: string, current: stri
   await db.delete(sessions).where(eq(sessions.userId, userId));
   await audit(db, userId, "account.password_changed", "user", userId);
   return createSession(db, userId);
+}
+
+export async function requestPasswordReset(db: Database, identifier: string) {
+  const raw = identifier.trim();
+  const email = raw.includes("@") ? normalizeEmail(raw) : null;
+  const phone = email ? null : normalizePhone(raw);
+  const [user] = email
+    ? await db.select().from(users).where(eq(users.email, email))
+    : await db.select().from(users).where(eq(users.phone, phone!));
+  if (!user) throw new AppError("not_found", "Account not found");
+  if (user.status === "suspended") throw new AppError("account_blocked", "This account is suspended");
+  const channel = email ? "password_email" : "password_phone";
+  const code = await issueCode(db, user.id, channel);
+  return { userId: user.id, name: user.name, code, channel, destination: email ?? phone! };
+}
+
+export async function resetPasswordWithCode(db: Database, code: string, password: string) {
+  assertPassword(password);
+  const normalized = normalizeVerificationCode(code);
+  if (!normalized) throw new AppError("invalid_code", "That code is not valid");
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(verificationCodes)
+    .where(and(isNull(verificationCodes.consumedAt), gt(verificationCodes.expiresAt, now)));
+  const match = rows.find(
+    (row) => (row.channel === "password_email" || row.channel === "password_phone") && row.codeHash === hashCode(normalized),
+  );
+  if (!match) throw new AppError("invalid_code", "That code is not valid");
+  const user = await mustUser(db, match.userId);
+  if (user.status === "suspended") throw new AppError("account_blocked", "This account is suspended");
+  await db.update(verificationCodes).set({ consumedAt: now }).where(eq(verificationCodes.id, match.id));
+  const patch: Partial<typeof users.$inferInsert> = {
+    passwordHash: await hashPassword(password),
+    updatedAt: now,
+  };
+  if (match.channel === "password_email") patch.emailVerifiedAt = now;
+  if (match.channel === "password_phone") patch.phoneVerifiedAt = now;
+  if (user.status === "pending_verification" || user.status === "deactivated") {
+    patch.status = "active";
+    patch.deletionRequestedAt = null;
+  }
+  await db.update(users).set(patch).where(eq(users.id, user.id));
+  await db.delete(sessions).where(eq(sessions.userId, user.id));
+  await audit(db, user.id, "account.password_reset", "user", user.id);
+  const token = await createSession(db, user.id);
+  return { user: await mustUser(db, user.id), token };
 }
 
 export async function requestRecoveryCode(db: Database, identifier: string) {
