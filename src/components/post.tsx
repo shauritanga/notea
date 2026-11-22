@@ -7,7 +7,7 @@ export function PostCard({
   lang,
   back,
 }: {
-  post: { id: string; publisherLabel: string; category: string; body: string; mediaUrl: string | null; kind: string };
+  post: { id: string; publisherLabel: string; category: string; body: string; mediaUrl: string | null; thumbnailUrl?: string | null; kind: string };
   lang: Lang;
   back: string;
 }) {
@@ -27,7 +27,7 @@ export function PostCard({
         </div>
       </div>
       {post.body ? <p>{post.body}</p> : null}
-      {post.mediaUrl ? <img src={post.mediaUrl} alt="" /> : null}
+      {post.kind === "video" ? (post.thumbnailUrl ? <img src={post.thumbnailUrl} alt="" /> : null) : post.mediaUrl ? <img src={post.mediaUrl} alt="" /> : null}
       <div className="app-actions">
         {[
           [likeAction, t(lang, "like")],

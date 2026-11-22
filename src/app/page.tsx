@@ -85,7 +85,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
               badge={labelFor(lang, featured.category)}
               title={clip(featured.body, 72)}
               meta={featured.publisherLabel}
-              image={featured.kind === "image" ? featured.mediaUrl : null}
+              image={coverFor(featured, clips)}
               watch={t(lang, "watch")}
             />
           ) : clips[0] ? (
@@ -136,7 +136,8 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
           </div>
           <div className="app-rail">
             {clips.map((video) => (
-              <Link key={video.id} className="app-clip app-pitch" data-tone={tone(video.id)} href={`/videos/${video.id}`}>
+              <Link key={video.id} className={video.thumbnailUrl ? "app-clip" : "app-clip app-pitch"} data-tone={tone(video.id)} href={`/videos/${video.id}`}>
+                {video.thumbnailUrl ? <img src={video.thumbnailUrl} alt="" /> : null}
                 <span>{video.title}</span>
               </Link>
             ))}
@@ -169,15 +170,20 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
             ))}
           </div>
           <div className="app-news">
-            {posts.slice(0, 4).map((post) => (
+            {posts.slice(0, 4).map((post) => {
+              const cover = coverFor(post, clips);
+              return (
               <Link key={post.id} href={`/post/${post.id}`}>
-                <span className="app-news-thumb app-pitch" data-tone={tone(post.id)} />
+                <span className="app-news-thumb">
+                  {cover ? <img src={cover} alt="" /> : <span className="app-pitch" data-tone={tone(post.id)} />}
+                </span>
                 <span>
                   <strong>{clip(post.body, 72)}</strong>
                   <small>{post.publisherLabel} · {labelFor(lang, post.category)}</small>
                 </span>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>
@@ -262,6 +268,16 @@ function clip(value: string, length: number) {
 
 function initials(name: string) {
   return name.split(" ").slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
+}
+
+function coverFor(
+  post: { kind: string; mediaUrl: string | null; thumbnailUrl: string | null; videoId: string | null },
+  clips: Array<{ id: string; thumbnailUrl: string | null }>,
+) {
+  if (post.kind === "image") return post.mediaUrl;
+  if (post.thumbnailUrl) return post.thumbnailUrl;
+  if (post.videoId) return clips.find((clip) => clip.id === post.videoId)?.thumbnailUrl ?? null;
+  return null;
 }
 
 function tone(id: string) {

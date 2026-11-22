@@ -1,4 +1,4 @@
-const cacheName = "notea-shell-v2";
+const cacheName = "notea-shell-v3";
 const shell = ["/", "/welcome", "/manifest.webmanifest", "/icon-192.png"];
 
 self.addEventListener("install", (event) => {
@@ -16,11 +16,15 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const path = new URL(event.request.url).pathname;
+  if (path.startsWith("/uploads/")) return;
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const copy = response.clone();
-        caches.open(cacheName).then((cache) => cache.put(event.request, copy)).catch(() => undefined);
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(cacheName).then((cache) => cache.put(event.request, copy)).catch(() => undefined);
+        }
         return response;
       })
       .catch(async () => {

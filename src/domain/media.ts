@@ -58,7 +58,7 @@ const MAX_ATTEMPTS = 3;
 export async function uploadVideo(
   db: Database,
   actorId: string,
-  input: { title: string; sourceUrl: string; profileId?: string },
+  input: { title: string; sourceUrl: string; profileId?: string; thumbnailUrl?: string },
 ) {
   await assertAccount(db, actorId, "write");
   if (!input.sourceUrl.trim() || !input.title.trim()) throw new AppError("video_required", "Add a title and a video");
@@ -72,6 +72,7 @@ export async function uploadVideo(
     profileId: input.profileId ?? null,
     title: input.title.trim(),
     sourceUrl: input.sourceUrl.trim(),
+    thumbnailUrl: input.thumbnailUrl ?? null,
     contentHash,
     status: "processing",
     renditions: [],
@@ -88,12 +89,14 @@ export async function processVideo(db: Database, videoId: string) {
     return { ...(await reload(db, videoId)), svg: "" };
   }
   const renditions: Rendition[] = [
-    { quality: "360p", bitrate: 800_000, url: `${video.sourceUrl}?rendition=360` },
-    { quality: "720p", bitrate: 2_500_000, url: `${video.sourceUrl}?rendition=720` },
+    { quality: "360p", bitrate: 800_000, url: video.sourceUrl },
+    { quality: "720p", bitrate: 2_500_000, url: video.sourceUrl },
   ];
-  const thumbnailUrl = `/uploads/thumbs/${video.id}.svg`;
+  const thumbnailUrl = video.thumbnailUrl || `/uploads/thumbs/${video.id}.svg`;
   await db.update(videos).set({ status: "ready", thumbnailUrl, renditions }).where(eq(videos.id, videoId));
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="#0f3d2e"/><text x="64" y="360" fill="#f6f3ec" font-size="48">${escapeXml(video.title)}</text></svg>`;
+  const svg = video.thumbnailUrl
+    ? ""
+    : `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="#0f3d2e"/><text x="64" y="360" fill="#f6f3ec" font-size="48">${escapeXml(video.title)}</text></svg>`;
   return { ...(await reload(db, videoId)), svg };
 }
 

@@ -79,7 +79,7 @@ async function publisher(db: Database, actorId: string) {
 export async function publishPost(
   db: Database,
   actorId: string,
-  input: { kind: "text" | "image" | "video"; category?: string; body: string; mediaUrl?: string; videoId?: string; region?: string },
+  input: { kind: "text" | "image" | "video"; category?: string; body: string; mediaUrl?: string; thumbnailUrl?: string; videoId?: string; region?: string },
 ) {
   await assertAccount(db, actorId, "write");
   const identity = await publisher(db, actorId);
@@ -100,6 +100,7 @@ export async function publishPost(
     category,
     body: input.body.trim(),
     mediaUrl: input.mediaUrl ?? null,
+    thumbnailUrl: input.thumbnailUrl ?? null,
     videoId: input.videoId ?? null,
     status: "published",
     createdAt: new Date(),

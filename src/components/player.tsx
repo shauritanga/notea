@@ -16,7 +16,12 @@ export function Player({
   fill?: boolean;
 }) {
   const [mbps, setMbps] = useState(5);
-  const chosen = useMemo(() => selectRendition(renditions, mbps), [renditions, mbps]);
+  const chosen = useMemo(() => {
+    const match = selectRendition(renditions, mbps);
+    if (!match) return match;
+    const url = match.url.startsWith("/uploads/") ? match.url.split("?")[0] : match.url;
+    return { ...match, url };
+  }, [renditions, mbps]);
   if (!chosen) return null;
   return (
     <div className={fill ? "app-player-fill" : "grid gap-3"}>

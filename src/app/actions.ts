@@ -1,7 +1,5 @@
 "use server";
 
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
@@ -34,7 +32,7 @@ import { createBusinessCampaign, createKairukiCampaign, markCampaignPaid, record
 import { authorizePlayerYouTube, publishToYouTube, retryYouTube, uploadVideo } from "@/domain/media";
 import { markNotificationsRead } from "@/domain/notify";
 import { assignOrganizationRole, registerOrganization, revokeOrganizationRole } from "@/domain/organizations";
-import { commentOnPost, followTarget, likePost, publishPost, reportPost, savePost, sharePost } from "@/domain/social";
+import { commentOnPost, followTarget, likePost, reportPost, savePost, sharePost } from "@/domain/social";
 import {
   addHighlight,
   addToShortlist,
@@ -50,6 +48,7 @@ import { AppError } from "@/domain/errors";
 import type { PlatformRoleName } from "@/domain/types";
 import { reviewVerification, submitVerification } from "@/domain/verification";
 import { sendVerificationCode } from "@/lib/messaging";
+import { publishFromForm, saveThumbnail, storedFile } from "@/lib/publish-post";
 import { clearSession, fail, getViewer, rememberCode, requireViewer, setSession } from "@/lib/viewer";
 
 async function deliverVerification(db: Awaited<ReturnType<typeof import("@/db/client").ready>>, userId: string, language: "sw" | "en") {
@@ -57,16 +56,6 @@ async function deliverVerification(db: Awaited<ReturnType<typeof import("@/db/cl
   await rememberCode(issued.codes[0]?.code ?? "");
   for (const item of issued.codes) await sendVerificationCode(item.channel, item.destination, item.code, language, issued.name);
   return issued.codes[0]?.code ?? "";
-}
-
-async function storedFile(file: FormDataEntryValue | null) {
-  if (!(file instanceof File) || file.size === 0) return "";
-  const safe = file.name.replace(/[^a-zA-Z0-9.]+/g, "-");
-  const name = `${crypto.randomUUID()}-${safe}`;
-  const dir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, name), Buffer.from(await file.arrayBuffer()));
-  return `/uploads/${name}`;
 }
 
 export async function registerAction(formData: FormData) {
@@ -207,48 +196,10 @@ export async function logoutAction() {
   redirect("/welcome");
 }
 
-async function saveThumbnail(video: { id: string; svg?: string }) {
-  if (!video.svg) return;
-  const dir = path.join(process.cwd(), "public", "uploads", "thumbs");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, `${video.id}.svg`), video.svg);
-}
-
 export async function publishAction(formData: FormData) {
   try {
     const { db, user } = await requireViewer();
-    const file = formData.get("file");
-    const upload = await storedFile(file);
-    const mime = file instanceof File ? file.type : "";
-    const filename = file instanceof File ? file.name.toLowerCase() : "";
-    const videoFile = mime.startsWith("video/") || /\.(mp4|webm|mov|m4v)$/.test(filename);
-    const imageFile = mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|avif)$/.test(filename);
-    const picked = String(formData.get("kind") || "text");
-    const kind = picked === "image" || picked === "video" ? picked : "text";
-    let mediaUrl: string | undefined;
-    let videoId: string | undefined;
-    if (kind === "image") {
-      if (!upload || !imageFile) throw new AppError("media_required", "Choose a photo from your gallery");
-      mediaUrl = upload;
-    }
-    if (kind === "video") {
-      if (!upload || !videoFile) throw new AppError("media_required", "Choose a video from your gallery");
-      const created = await uploadVideo(db, user.id, {
-        title: (String(formData.get("body") || "") || (file instanceof File ? file.name : "Video")).slice(0, 80),
-        sourceUrl: upload,
-      });
-      await saveThumbnail(created);
-      mediaUrl = upload;
-      videoId = created.id;
-    }
-    await publishPost(db, user.id, {
-      kind,
-      category: String(formData.get("category") || "general"),
-      body: String(formData.get("body") || ""),
-      mediaUrl,
-      videoId,
-      region: String(formData.get("region") || "") || undefined,
-    });
+    await publishFromForm(db, user.id, formData);
   } catch (error) {
     fail("/compose", error);
   }
