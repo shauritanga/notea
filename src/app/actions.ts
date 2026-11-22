@@ -223,24 +223,29 @@ export async function publishAction(formData: FormData) {
     const filename = file instanceof File ? file.name.toLowerCase() : "";
     const videoFile = mime.startsWith("video/") || /\.(mp4|webm|mov|m4v)$/.test(filename);
     const imageFile = mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|avif)$/.test(filename);
-    let kind = String(formData.get("kind") || "text") as "text" | "image" | "video";
-    let videoId = String(formData.get("videoId") || "") || undefined;
-    if (upload && (kind === "video" || videoFile)) {
-      kind = "video";
+    const picked = String(formData.get("kind") || "text");
+    const kind = picked === "image" || picked === "video" ? picked : "text";
+    let mediaUrl: string | undefined;
+    let videoId: string | undefined;
+    if (kind === "image") {
+      if (!upload || !imageFile) throw new AppError("media_required", "Choose a photo from your gallery");
+      mediaUrl = upload;
+    }
+    if (kind === "video") {
+      if (!upload || !videoFile) throw new AppError("media_required", "Choose a video from your gallery");
       const created = await uploadVideo(db, user.id, {
         title: (String(formData.get("body") || "") || (file instanceof File ? file.name : "Video")).slice(0, 80),
         sourceUrl: upload,
       });
       await saveThumbnail(created);
+      mediaUrl = upload;
       videoId = created.id;
-    } else if (upload && (kind === "image" || imageFile)) {
-      kind = "image";
     }
     await publishPost(db, user.id, {
       kind,
       category: String(formData.get("category") || "general"),
       body: String(formData.get("body") || ""),
-      mediaUrl: upload || String(formData.get("mediaUrl") || "") || undefined,
+      mediaUrl,
       videoId,
       region: String(formData.get("region") || "") || undefined,
     });

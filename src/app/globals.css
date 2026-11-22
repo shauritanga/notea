@@ -59,8 +59,11 @@ body {
 .app-screen {
   position: relative;
   display: flex;
-  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
   flex-direction: column;
+  overflow: hidden;
   background: var(--paper);
   color: var(--ink);
 }
@@ -110,13 +113,49 @@ body {
   min-height: 0;
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom));
+  padding: 0.75rem 0 calc(1.25rem + env(safe-area-inset-bottom));
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 
 .app-main::-webkit-scrollbar {
   display: none;
+}
+
+.app-compose {
+  display: grid;
+  gap: 0.9rem;
+  padding-bottom: 1rem;
+}
+
+.app-gallery {
+  position: relative;
+  display: grid;
+  min-height: 8.5rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed var(--line);
+  border-radius: 1.2rem;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+.app-gallery input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.app-gallery img {
+  width: 100%;
+  height: 11rem;
+  object-fit: cover;
 }
 
 .app-main > * {
