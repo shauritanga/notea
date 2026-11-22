@@ -1312,6 +1312,60 @@ body {
   text-align: center;
 }
 
+.app-tiktok-controls {
+  position: absolute;
+  right: 0.45rem;
+  bottom: calc(0.4rem + env(safe-area-inset-bottom));
+  left: 0.45rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.app-tiktok-controls button {
+  display: grid;
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: none;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: white;
+}
+
+.app-tiktok-controls svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.app-tiktok-controls span {
+  flex: none;
+  min-width: 2rem;
+  color: white;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-tiktok-controls input[type="range"] {
+  min-width: 0;
+  flex: 1;
+  height: 1.3rem;
+  accent-color: var(--lime);
+  background: transparent;
+}
+
+.app-tiktok:has(.app-tiktok-controls) .app-tiktok-copy {
+  bottom: 3.15rem;
+}
+
+.app-tiktok:has(.app-tiktok-controls) .app-tiktok-rail {
+  bottom: 3.3rem;
+}
+
 .app-tiktok-pause {
   position: absolute;
   top: 50%;
@@ -1542,14 +1596,16 @@ body {
 }
 
 .app-watch {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 100%;
 }
 
 .app-watch-visual {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -1578,7 +1634,7 @@ body {
 .app-watch-copy {
   position: absolute;
   right: 4.5rem;
-  bottom: 15rem;
+  bottom: 3.4rem;
   left: 1rem;
   z-index: 2;
   display: grid;
@@ -1670,15 +1726,14 @@ body {
 }
 
 .app-watch-sheet {
-  position: absolute;
-  right: 0.8rem;
-  bottom: 4.6rem;
-  left: 0.8rem;
+  position: relative;
   z-index: 3;
   display: grid;
   gap: 0.55rem;
-  max-height: 11rem;
+  max-height: 42%;
   overflow: auto;
+  padding: 0.75rem 0.8rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: #121814;
 }
 
 .app-hearts {
@@ -1698,7 +1753,7 @@ body {
 
 .app-player-fill video {
   width: 100%;
-  height: calc(100% - 4.6rem);
+  height: 100%;
   border-radius: 0;
   object-fit: contain;
   background: #070b08;

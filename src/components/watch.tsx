@@ -27,7 +27,20 @@ export function WatchPost({
   state: { likes: number; liked: boolean; comments: number; saves: number; saved: boolean; shares: number; following: boolean };
   comments: Array<{ id: string; name: string; body: string }>;
   commentsOpen: boolean;
-  labels: { like: string; comment: string; save: string; share: string; follow: string; unfollow: string; copied: string };
+  labels: {
+    like: string;
+    comment: string;
+    save: string;
+    share: string;
+    follow: string;
+    unfollow: string;
+    copied: string;
+    play: string;
+    pause: string;
+    progress: string;
+    soundOn: string;
+    soundOff: string;
+  };
   likeAction: Action;
   saveAction: Action;
   shareAction: Action;
@@ -37,8 +50,12 @@ export function WatchPost({
   const [sheet, setSheet] = useState(commentsOpen ? "comments" : "");
   const [note, setNote] = useState("");
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [current, setCurrent] = useState(0);
+  const [duration, setDuration] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const shareRef = useRef<HTMLFormElement>(null);
+  const seeking = useRef(false);
   const back = `/post/${id}`;
 
   function togglePlay() {
@@ -51,6 +68,21 @@ export function WatchPost({
       video.pause();
       setPaused(true);
     }
+  }
+
+  function toggleSound() {
+    const video = videoRef.current;
+    if (!video) return;
+    const nextMuted = !video.muted;
+    video.muted = nextMuted;
+    if (!nextMuted) video.volume = 1;
+    setMuted(nextMuted);
+  }
+
+  function seek(value: number) {
+    const video = videoRef.current;
+    if (video) video.currentTime = value;
+    setCurrent(value);
   }
 
   async function share() {
@@ -72,7 +104,20 @@ export function WatchPost({
     <div className="app-tiktok">
       <div className="app-tiktok-media">
         {media.kind === "video" && media.src ? (
-          <video ref={videoRef} src={media.src} poster={media.poster || undefined} autoPlay muted loop playsInline onClick={togglePlay} />
+          <video
+            ref={videoRef}
+            src={media.src}
+            poster={media.poster || undefined}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            onClick={togglePlay}
+            onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
+            onTimeUpdate={(event) => {
+              if (!seeking.current) setCurrent(event.currentTarget.currentTime);
+            }}
+          />
         ) : media.kind === "image" && media.src ? (
           <img src={media.src} alt="" />
         ) : (
@@ -81,6 +126,33 @@ export function WatchPost({
           </div>
         )}
         {paused ? <span className="app-tiktok-pause">❚❚</span> : null}
+        {media.kind === "video" && media.src ? (
+          <div className="app-tiktok-controls">
+            <button type="button" onClick={togglePlay} aria-label={paused ? labels.play : labels.pause}>
+              {paused ? <PlayIcon /> : <PauseIcon />}
+            </button>
+            <span>{clock(current)}</span>
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              step={0.1}
+              value={Math.min(current, duration || 0)}
+              aria-label={labels.progress}
+              onPointerDown={() => {
+                seeking.current = true;
+              }}
+              onPointerUp={() => {
+                seeking.current = false;
+              }}
+              onChange={(event) => seek(Number(event.target.value))}
+            />
+            <span>{clock(duration)}</span>
+            <button type="button" onClick={toggleSound} aria-label={muted ? labels.soundOn : labels.soundOff}>
+              {muted ? <MutedIcon /> : <SoundIcon />}
+            </button>
+          </div>
+        ) : null}
       </div>
       <Link className="app-tiktok-back" href="/" aria-label="Close">‹</Link>
       <div className="app-tiktok-rail">
@@ -175,6 +247,46 @@ function CountForm({
         <span>{count}</span>
       </button>
     </form>
+  );
+}
+
+function clock(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const whole = Math.floor(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
+
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path fill="currentColor" d="M8 5.5v13l11-6.5z" />
+    </svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path fill="currentColor" d="M7 5h3.2v14H7zm6.8 0H17v14h-3.2z" />
+    </svg>
+  );
+}
+
+function SoundIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path fill="currentColor" d="M4 9h3.2L12 5.2v13.6L7.2 15H4z" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" d="M15.5 9.5a3.2 3.2 0 0 1 0 5M17.8 7.2a6.2 6.2 0 0 1 0 9.6" />
+    </svg>
+  );
+}
+
+function MutedIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path fill="currentColor" d="M4 9h3.2L12 5.2v13.6L7.2 15H4z" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" d="M16 10l4 4m0-4-4 4" />
+    </svg>
   );
 }
 

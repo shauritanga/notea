@@ -55,6 +55,11 @@ export default async function PostPage({
             follow: t(lang, "follow"),
             unfollow: t(lang, "unfollow"),
             copied: t(lang, "copied"),
+            play: t(lang, "play"),
+            pause: t(lang, "pause"),
+            progress: t(lang, "progress"),
+            soundOn: t(lang, "soundOn"),
+            soundOff: t(lang, "soundOff"),
           }}
           likeAction={likeAction}
           saveAction={saveAction}
