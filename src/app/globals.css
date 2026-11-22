@@ -754,6 +754,12 @@ body {
   gap: 1.15rem;
 }
 
+.app-feed {
+  display: grid;
+  gap: 0.9rem;
+  padding-bottom: 0.5rem;
+}
+
 .app-cal-head,
 .app-block-head {
   display: flex;

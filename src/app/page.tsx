@@ -76,7 +76,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
         <section className="grid gap-3">
           <div className="app-block-head">
             <strong>{t(lang, "featured")}</strong>
-            <Link href="/discover">{t(lang, "seeAll")}</Link>
+            <Link href="/featured">{t(lang, "seeAll")}</Link>
           </div>
           {featured ? (
             <FeaturedCard
