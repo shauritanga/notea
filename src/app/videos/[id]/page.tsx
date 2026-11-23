@@ -39,6 +39,12 @@ export default async function VideoPage({ params, searchParams }: { params: Prom
             {jobs.map((job) => (
               <p key={job.id} className="text-sm text-muted">
                 {job.destination} · {job.status}
+                {job.status === "published" && job.externalId && !job.externalId.startsWith("yt_") ? (
+                  <>
+                    {" · "}
+                    <a className="font-semibold text-white" href={`https://www.youtube.com/watch?v=${job.externalId}`}>Watch on YouTube</a>
+                  </>
+                ) : null}
                 {job.status === "failed" ? (
                   <form action={retryYoutubeAction}>
                     <input type="hidden" name="publicationId" value={job.id} />

@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Database } from "@/domain/db";
 import { AppError } from "@/domain/errors";
-import { uploadVideo } from "@/domain/media";
+import { mirrorToOfficialYouTube, officialYouTubePublisher, uploadVideo } from "@/domain/media";
 import { publishPost } from "@/domain/social";
 
 export async function storedFile(file: FormDataEntryValue | null) {
@@ -68,4 +68,15 @@ export async function publishFromForm(db: Database, userId: string, formData: Fo
     videoId,
     region: String(formData.get("region") || "") || undefined,
   });
+  if (kind === "video" && videoId) await mirrorPostedVideo(db, userId, videoId);
+}
+
+async function mirrorPostedVideo(db: Database, userId: string, videoId: string) {
+  const publisher = officialYouTubePublisher();
+  if (!publisher) return;
+  try {
+    await mirrorToOfficialYouTube(db, userId, videoId, publisher);
+  } catch {
+    // The Notea post is already saved. A YouTube failure stays on the publication row.
+  }
 }

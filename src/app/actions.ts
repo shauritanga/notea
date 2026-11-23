@@ -31,7 +31,7 @@ import {
 } from "@/domain/admin";
 import { assignBusinessRole, registerBusiness, revokeBusinessRole, sendEnquiry } from "@/domain/businesses";
 import { createBusinessCampaign, createKairukiCampaign, markCampaignPaid, recordCampaignClick, reviewBusinessCampaign } from "@/domain/campaigns";
-import { authorizePlayerYouTube, publishToYouTube, retryYouTube, uploadVideo } from "@/domain/media";
+import { authorizePlayerYouTube, officialYouTubePublisher, publishToYouTube, retryYouTube, uploadVideo } from "@/domain/media";
 import { markNotificationsRead } from "@/domain/notify";
 import { assignOrganizationRole, registerOrganization, revokeOrganizationRole } from "@/domain/organizations";
 import { commentOnPost, likePost, reportPost, savePost, sharePost, toggleFollow } from "@/domain/social";
@@ -584,7 +584,7 @@ export async function youtubeAction(formData: FormData) {
     await publishToYouTube(db, user.id, {
       videoId: id,
       destination: String(formData.get("destination") || "player_channel") as "player_channel",
-    });
+    }, officialYouTubePublisher() ?? undefined);
   } catch (error) {
     fail(`/videos/${id}`, error);
   }
@@ -595,7 +595,7 @@ export async function retryYoutubeAction(formData: FormData) {
   const videoId = String(formData.get("videoId"));
   try {
     const { db, user } = await requireViewer();
-    await retryYouTube(db, user.id, String(formData.get("publicationId")));
+    await retryYouTube(db, user.id, String(formData.get("publicationId")), officialYouTubePublisher() ?? undefined);
   } catch (error) {
     fail(`/videos/${videoId}`, error);
   }

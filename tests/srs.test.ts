@@ -58,7 +58,9 @@ import {
 import {
   GoogleYouTubePublisher,
   authorizePlayerYouTube,
+  mirrorToOfficialYouTube,
   publishToYouTube,
+  readStoredVideo,
   retryYouTube,
   selectRendition,
   uploadVideo,
@@ -599,17 +601,27 @@ describe("SRS acceptance", () => {
     expect(published.externalId).toBe("yt_player");
     const duplicate = await publishToYouTube(db, player.user.id, { videoId: video.id, destination: "player_channel" }, flaky);
     expect(duplicate.id).toBe(published.id);
+    await expect(readStoredVideo("/uploads/../.env")).rejects.toThrow("Video file is not on this server");
     const official = await publishToYouTube(db, admin.user.id, { videoId: video.id, destination: "notea_official" }, new GoogleYouTubePublisher({
       accessToken: "token-1",
+      loadMedia: async () => ({ bytes: Uint8Array.from([1, 2, 3, 4]), contentType: "video/mp4" }),
       fetchImpl: async (url, init) => {
-        expect(String(url)).toContain("youtube/v3/videos");
         const headers = new Headers(init?.headers);
         expect(headers.get("authorization")).toBe("Bearer token-1");
+        if (String(url).includes("uploadType=resumable")) {
+          expect(init?.method).toBe("POST");
+          expect(headers.get("x-upload-content-length")).toBe("4");
+          return new Response(null, { status: 200, headers: { location: "https://upload.youtube.test/session" } });
+        }
+        expect(String(url)).toBe("https://upload.youtube.test/session");
+        expect(init?.method).toBe("PUT");
         return new Response(JSON.stringify({ id: "yt_official" }), { status: 200 });
       },
     }));
     expect(official.status).toBe("published");
     expect(official.externalId).toBe("yt_official");
+    const mirrored = await mirrorToOfficialYouTube(db, player.user.id, video.id, flaky);
+    expect(mirrored.id).toBe(official.id);
     const videoNotes = await listNotifications(db, player.user.id);
     expect(videoNotes.some((note) => note.type === "video")).toBe(true);
     await updateAccountSettings(db, player.user.id, { notificationPrefs: { social: false } });
