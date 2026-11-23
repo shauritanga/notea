@@ -35,7 +35,7 @@ function verificationLetter(code: string, lang: "sw" | "en", name: string, purpo
       : lang === "en"
         ? "If you did not attempt to sign in, please change your password immediately."
         : "Kama hukujaribu kuingia, tafadhali badilisha nenosiri lako mara moja.";
-  const site = "https://notea.zanua.co.tz";
+  const site = "https://notea.co.tz";
   const text = [hello, "", lead, "", code, "", expiry, "", warning, "", "---", "NOTEA", site, "", "Copyright © Notea"].join("\n");
   const html = `<div style="font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;max-width:560px;line-height:1.5;">
 <p style="margin:0 0 16px;">${escapeHtml(hello)}</p>

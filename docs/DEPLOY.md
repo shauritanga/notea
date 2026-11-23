@@ -1,6 +1,6 @@
 # Deployment
 
-Notea is served at https://notea.zanua.co.tz. The app runs on the VPS at `139.59.139.30`, in `/var/www/notea`. PM2 keeps the process named `notea` online with `npm start -- -p 4300`. Nginx proxies the domain to that port. The site file is `deploy/nginx/notea.conf`.
+Notea is served at https://notea.co.tz. The app runs on the VPS at `139.59.139.30`, in `/var/www/notea`. PM2 keeps the process named `notea` online with `npm start -- -p 4300`. Nginx proxies the domain to that port. The site file is `deploy/nginx/notea.conf`.
 
 ```bash
 ssh root@139.59.139.30
@@ -16,5 +16,5 @@ Leave the server `.env` in place. Do not commit it, and do not overwrite it with
 After the restart, `pm2 describe notea` should show status `online`, and this should print `200`:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://notea.zanua.co.tz/welcome
+curl -s -o /dev/null -w "%{http_code}\n" https://notea.co.tz/welcome
 ```
