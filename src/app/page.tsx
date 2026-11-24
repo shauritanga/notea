@@ -115,7 +115,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
         <section className="grid gap-3">
           <div className="app-block-head">
             <strong>{t(lang, "allPosts")}</strong>
-            <Link href="/discover">{t(lang, "seeAll")}</Link>
+            <Link href={sectionHref("/posts", { day: day || undefined, cat })}>{t(lang, "seeAll")}</Link>
           </div>
           {rest.length === 0 ? <Quiet>{t(lang, "empty")}</Quiet> : null}
           <div className="app-pair">
@@ -132,7 +132,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
         <section className="grid gap-3">
           <div className="app-block-head">
             <strong>{t(lang, "highlights")}</strong>
-            <Link href="/videos/new">{t(lang, "seeAll")}</Link>
+            <Link href="/highlights">{t(lang, "seeAll")}</Link>
           </div>
           <div className="app-rail">
             {clips.map((video) => (
@@ -160,7 +160,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
         <section className="grid gap-3">
           <div className="app-block-head">
             <strong>{t(lang, "latest")}</strong>
-            <Link href="/discover">{t(lang, "seeAll")}</Link>
+            <Link href={sectionHref("/latest", { tab: mode })}>{t(lang, "seeAll")}</Link>
           </div>
           <div className="app-pills">
             {tabs.map((tab) => (
@@ -223,6 +223,11 @@ function FeaturedCard({
       </span>
     </Link>
   );
+}
+
+function sectionHref(path: string, next: { day?: string; tab?: string; cat?: string }) {
+  const query = homeHref(next);
+  return query === "/" ? path : `${path}?${query.slice(2)}`;
 }
 
 function homeHref(next: { week?: number; day?: string; tab?: string; cat?: string }) {
