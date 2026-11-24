@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   businesses,
   comments,
@@ -10,6 +10,7 @@ import {
   posts,
   profiles,
   shares,
+  users,
   videos,
 } from "@/db/schema";
 import { assertAccount, assertBusiness, assertOrg, mustUser } from "@/domain/access";
@@ -307,4 +308,124 @@ export async function getPost(db: Database, postId: string) {
 export async function authorName(db: Database, userId: string) {
   const user = await mustUser(db, userId);
   return user.name;
+}
+
+export async function loadWatchReel(db: Database, actorId: string, focusId: string) {
+  const ordered = await db.select().from(posts).where(eq(posts.status, "published")).orderBy(desc(posts.createdAt));
+  const focus = ordered.findIndex((post) => post.id === focusId);
+  if (focus < 0) return null;
+  const limit = 60;
+  let start = 0;
+  let end = ordered.length;
+  if (ordered.length > limit) {
+    start = Math.max(0, focus - 20);
+    end = Math.min(ordered.length, start + limit);
+    start = Math.max(0, end - limit);
+  }
+  const window = ordered.slice(start, end);
+  const ids = window.map((post) => post.id);
+  const profileIds = unique(window.map((post) => post.publisherProfileId));
+  const orgIds = unique(window.map((post) => post.publisherOrganizationId));
+  const businessIds = unique(window.map((post) => post.publisherBusinessId));
+  const videoIds = unique(window.map((post) => post.videoId));
+  const [likeRows, commentRows, saveRows, shareRows, myFollows, profileRows, orgRows, businessRows, videoRows] = await Promise.all([
+    db.select().from(postLikes).where(inArray(postLikes.postId, ids)),
+    db.select().from(comments).where(inArray(comments.postId, ids)),
+    db.select().from(postSaves).where(inArray(postSaves.postId, ids)),
+    db.select().from(shares).where(inArray(shares.postId, ids)),
+    db.select().from(follows).where(eq(follows.followerUserId, actorId)),
+    profileIds.length ? db.select().from(profiles).where(inArray(profiles.id, profileIds)) : Promise.resolve([]),
+    orgIds.length ? db.select().from(organizations).where(inArray(organizations.id, orgIds)) : Promise.resolve([]),
+    businessIds.length ? db.select().from(businesses).where(inArray(businesses.id, businessIds)) : Promise.resolve([]),
+    videoIds.length ? db.select().from(videos).where(inArray(videos.id, videoIds)) : Promise.resolve([]),
+  ]);
+  const commenterIds = unique(commentRows.map((comment) => comment.userId));
+  const commenters = commenterIds.length ? await db.select().from(users).where(inArray(users.id, commenterIds)) : [];
+  const commenterName = new Map(commenters.map((user) => [user.id, user.name]));
+  const profileById = new Map(profileRows.map((profile) => [profile.id, profile]));
+  const orgById = new Map(orgRows.map((org) => [org.id, org]));
+  const businessById = new Map(businessRows.map((shop) => [shop.id, shop]));
+  const videoById = new Map(videoRows.map((video) => [video.id, video]));
+  const focusAt = window.findIndex((post) => post.id === focusId);
+  const rotated = [...window.slice(focusAt), ...window.slice(0, focusAt)];
+  const slides = rotated.map((post) => {
+    const clip = post.videoId ? videoById.get(post.videoId) : undefined;
+    const account = accountFor(post, profileById, orgById, businessById);
+    const postComments = commentRows
+      .filter((comment) => comment.postId === post.id)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    return {
+      id: post.id,
+      caption: post.body,
+      media: mediaFor(post, clip),
+      account: { ...account, self: post.authorUserId === actorId },
+      state: {
+        likes: likeRows.filter((row) => row.postId === post.id).length,
+        liked: likeRows.some((row) => row.postId === post.id && row.userId === actorId),
+        comments: postComments.length,
+        saves: saveRows.filter((row) => row.postId === post.id).length,
+        saved: saveRows.some((row) => row.postId === post.id && row.userId === actorId),
+        shares: shareRows.filter((row) => row.postId === post.id).length,
+        following: account.targetId
+          ? myFollows.some((row) => row.targetType === account.targetType && row.targetId === account.targetId)
+          : false,
+      },
+      comments: postComments.map((comment) => ({
+        id: comment.id,
+        body: comment.body,
+        name: commenterName.get(comment.userId) || "",
+      })),
+    };
+  });
+  return { slides, index: 0 };
+}
+
+function unique(values: Array<string | null | undefined>) {
+  return [...new Set(values.filter((value): value is string => Boolean(value)))];
+}
+
+function accountFor(
+  post: { publisherLabel: string; publisherProfileId: string | null; publisherOrganizationId: string | null; publisherBusinessId: string | null },
+  profileById: Map<string, { displayName: string; avatarUrl: string | null }>,
+  orgById: Map<string, { name: string; logoUrl: string | null }>,
+  businessById: Map<string, { name: string; logoUrl: string | null }>,
+) {
+  if (post.publisherProfileId) {
+    const profile = profileById.get(post.publisherProfileId);
+    return face(profile?.displayName || post.publisherLabel, profile?.avatarUrl || "", `/players/${post.publisherProfileId}`, "profile", post.publisherProfileId);
+  }
+  if (post.publisherOrganizationId) {
+    const org = orgById.get(post.publisherOrganizationId);
+    return face(org?.name || post.publisherLabel, org?.logoUrl || "", `/clubs/${post.publisherOrganizationId}`, "organization", post.publisherOrganizationId);
+  }
+  if (post.publisherBusinessId) {
+    const shop = businessById.get(post.publisherBusinessId);
+    return face(shop?.name || post.publisherLabel, shop?.logoUrl || "", `/businesses/${post.publisherBusinessId}`, "business", post.publisherBusinessId);
+  }
+  return face(post.publisherLabel, "", "/discover", "", "");
+}
+
+function face(name: string, avatar: string, href: string, targetType: string, targetId: string) {
+  const initials = name.split(" ").slice(0, 2).map((part) => part[0] || "").join("").toUpperCase() || "N";
+  return { name, avatar, href, initials, targetType, targetId };
+}
+
+function mediaFor(
+  post: { id: string; kind: string; body: string; mediaUrl: string | null; thumbnailUrl: string | null },
+  clip: { sourceUrl: string | null; thumbnailUrl: string | null } | undefined,
+) {
+  const videoSrc = playable(clip?.sourceUrl || (post.kind === "video" ? post.mediaUrl : ""));
+  const imageSrc = post.kind === "image" ? post.mediaUrl || "" : post.kind === "video" ? post.thumbnailUrl || clip?.thumbnailUrl || "" : "";
+  const kind: "video" | "image" | "text" =
+    post.kind === "video" && videoSrc ? "video" : post.kind === "image" && (post.mediaUrl || imageSrc) ? "image" : post.kind === "text" ? "text" : videoSrc ? "video" : "image";
+  return {
+    kind,
+    src: post.kind === "video" ? videoSrc : post.mediaUrl || imageSrc,
+    poster: post.thumbnailUrl || clip?.thumbnailUrl || "",
+  };
+}
+
+function playable(url: string | null | undefined) {
+  if (!url) return "";
+  return url.startsWith("/uploads/") ? url.split("?")[0] : url;
 }

@@ -1,9 +1,91 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { SnapReel } from "@/components/snap";
 
 type Action = (formData: FormData) => void | Promise<void>;
+
+type WatchSlide = {
+  id: string;
+  caption: string;
+  media: { kind: "video" | "image" | "text"; src: string; poster: string };
+  account: { name: string; href: string; avatar: string; initials: string; targetType: string; targetId: string; self: boolean };
+  state: { likes: number; liked: boolean; comments: number; saves: number; saved: boolean; shares: number; following: boolean };
+  comments: Array<{ id: string; name: string; body: string }>;
+};
+
+type WatchLabels = {
+  like: string;
+  comment: string;
+  save: string;
+  share: string;
+  follow: string;
+  unfollow: string;
+  copied: string;
+  play: string;
+  pause: string;
+  progress: string;
+  soundOn: string;
+  soundOff: string;
+};
+
+export function WatchReel({
+  slides,
+  start,
+  focusId,
+  commentsOpen,
+  labels,
+  likeAction,
+  saveAction,
+  shareAction,
+  commentAction,
+  followAction,
+}: {
+  slides: WatchSlide[];
+  start: number;
+  focusId: string;
+  commentsOpen: boolean;
+  labels: WatchLabels;
+  likeAction: Action;
+  saveAction: Action;
+  shareAction: Action;
+  commentAction: Action;
+  followAction: Action;
+}) {
+  const [muted, setMuted] = useState(true);
+  const [locked, setLocked] = useState(false);
+  return (
+    <SnapReel start={start} count={slides.length} locked={locked} label="Posts" hrefs={slides.map((slide) => `/post/${slide.id}`)}>
+      {(active) =>
+        slides.map((slide, index) => (
+          <div key={slide.id} className="app-reel-slide" data-index={index} inert={index === active ? undefined : true}>
+            <WatchPost
+              id={slide.id}
+              caption={slide.caption}
+              media={slide.media}
+              account={slide.account}
+              state={slide.state}
+              comments={slide.comments}
+              commentsOpen={commentsOpen && slide.id === focusId}
+              labels={labels}
+              likeAction={likeAction}
+              saveAction={saveAction}
+              shareAction={shareAction}
+              commentAction={commentAction}
+              followAction={followAction}
+              active={index === active}
+              primed={Math.abs(index - active) <= 1}
+              muted={muted}
+              onMutedChange={setMuted}
+              onSheet={setLocked}
+            />
+          </div>
+        ))
+      }
+    </SnapReel>
+  );
+}
 
 export function WatchPost({
   id,
@@ -19,6 +101,11 @@ export function WatchPost({
   shareAction,
   commentAction,
   followAction,
+  active = true,
+  primed = true,
+  muted: mutedFromReel,
+  onMutedChange,
+  onSheet,
 }: {
   id: string;
   caption: string;
@@ -27,36 +114,56 @@ export function WatchPost({
   state: { likes: number; liked: boolean; comments: number; saves: number; saved: boolean; shares: number; following: boolean };
   comments: Array<{ id: string; name: string; body: string }>;
   commentsOpen: boolean;
-  labels: {
-    like: string;
-    comment: string;
-    save: string;
-    share: string;
-    follow: string;
-    unfollow: string;
-    copied: string;
-    play: string;
-    pause: string;
-    progress: string;
-    soundOn: string;
-    soundOff: string;
-  };
+  labels: WatchLabels;
   likeAction: Action;
   saveAction: Action;
   shareAction: Action;
   commentAction: Action;
   followAction: Action;
+  active?: boolean;
+  primed?: boolean;
+  muted?: boolean;
+  onMutedChange?: (muted: boolean) => void;
+  onSheet?: (open: boolean) => void;
 }) {
   const [sheet, setSheet] = useState(commentsOpen ? "comments" : "");
   const [note, setNote] = useState("");
   const [paused, setPaused] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [ownMuted, setOwnMuted] = useState(true);
+  const muted = mutedFromReel ?? ownMuted;
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const shareRef = useRef<HTMLFormElement>(null);
   const seeking = useRef(false);
   const back = `/post/${id}`;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || media.kind !== "video" || !media.src) return;
+    if (!active) {
+      video.pause();
+      return;
+    }
+    setPaused(false);
+    void video.play().catch(() => setPaused(true));
+  }, [active, media.kind, media.src]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = muted;
+    if (!muted) video.volume = 1;
+  }, [muted, active]);
+
+  useEffect(() => {
+    if (commentsOpen) onSheet?.(true);
+  }, [commentsOpen, onSheet]);
+
+  function openSheet(next: string) {
+    setSheet(next);
+    onSheet?.(next !== "");
+  }
 
   function togglePlay() {
     const video = videoRef.current;
@@ -73,10 +180,11 @@ export function WatchPost({
   function toggleSound() {
     const video = videoRef.current;
     if (!video) return;
-    const nextMuted = !video.muted;
+    const nextMuted = !muted;
     video.muted = nextMuted;
     if (!nextMuted) video.volume = 1;
-    setMuted(nextMuted);
+    if (onMutedChange) onMutedChange(nextMuted);
+    else setOwnMuted(nextMuted);
   }
 
   function seek(value: number) {
@@ -106,11 +214,12 @@ export function WatchPost({
         {media.kind === "video" && media.src ? (
           <video
             ref={videoRef}
-            src={media.src}
+            src={active || primed ? media.src : undefined}
             poster={media.poster || undefined}
-            autoPlay
+            autoPlay={active}
             muted={muted}
             loop
+            preload={active ? "auto" : "metadata"}
             playsInline
             onClick={togglePlay}
             onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
@@ -172,7 +281,7 @@ export function WatchPost({
         <CountForm action={likeAction} id={id} label={labels.like} count={state.likes} on={state.liked}>
           <Heart filled={state.liked} />
         </CountForm>
-        <button type="button" onClick={() => setSheet("comments")} aria-label={labels.comment}>
+        <button type="button" onClick={() => openSheet("comments")} aria-label={labels.comment}>
           <CommentIcon />
           <span>{state.comments}</span>
         </button>
@@ -197,7 +306,7 @@ export function WatchPost({
         <div className="app-tiktok-sheet">
           <div className="app-tiktok-sheet-head">
             <strong>{state.comments} {labels.comment}</strong>
-            <button type="button" onClick={() => setSheet("")} aria-label="Close">×</button>
+            <button type="button" onClick={() => openSheet("")} aria-label="Close">×</button>
           </div>
           <div className="app-tiktok-thread">
             {comments.map((comment) => (
